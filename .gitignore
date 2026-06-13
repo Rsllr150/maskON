@@ -1,9 +1,9 @@
-# Environnements virtuels
+# Virtual environments
 .venv/
 venv/
 env/
 
-# Caches Python
+# Python caches
 __pycache__/
 *.py[cod]
 *$py.class
@@ -11,7 +11,7 @@ __pycache__/
 .ruff_cache/
 .mypy_cache/
 
-# Secrets & config locale
+# Secrets & local config
 .env
 *.local
 

@@ -1,0 +1,10 @@
+[project]
+name = "maskon"
+version = "0.1.0"
+description = "Detection and masking of personally identifiable information (PII), French formats."
+requires-python = ">=3.12"
+
+[tool.pytest.ini_options]
+# Let pytest find the `maskon` package from the project root.
+pythonpath = ["."]
+testpaths = ["tests"]
