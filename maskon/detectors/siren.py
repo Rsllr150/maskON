@@ -6,30 +6,17 @@ the checksum removes false positives (invoice numbers, etc.).
 
 import re
 
+from maskon.detectors.base import Detector
 from maskon.detectors.validators.luhn import luhn
-from maskon.models import Finding
-
-# 9 digits, optionally grouped 3-3-3 with spaces.
-# \b at both ends avoids matching inside a longer run of digits.
-_PATTERN = re.compile(r"\b\d{3} ?\d{3} ?\d{3}\b")
 
 
-class SirenDetector:
+class SirenDetector(Detector):
     type = "SIREN"
+    confidence = 1.0  # validated by checksum
+    # 9 digits, optionally grouped 3-3-3 with spaces.
+    # \b at both ends avoids matching inside a longer run of digits.
+    _pattern = re.compile(r"\b\d{3} ?\d{3} ?\d{3}\b")
 
-    def detect(self, text: str) -> list[Finding]:
-        findings: list[Finding] = []
-        for match in _PATTERN.finditer(text):
-            candidate = match.group()
-            # Strip spaces before validating the control key.
-            digits = candidate.replace(" ", "")
-            if luhn(digits):
-                findings.append(
-                    Finding(
-                        type=self.type,
-                        start=match.start(),
-                        end=match.end(),
-                        confidence=1.0,  # validated by checksum
-                    )
-                )
-        return findings
+    def _is_valid(self, candidate: str) -> bool:
+        # Strip spaces before validating the control key.
+        return luhn(candidate.replace(" ", ""))
