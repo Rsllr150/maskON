@@ -41,8 +41,14 @@ class RedactionService:
         return merge_overlapping(findings)
 
     def redact(self, text: str, mask: str = "label") -> tuple[str, list[Finding]]:
+        # Validate here so the core is self-sufficient, independent of any
+        # caller (the API also validates, but a script using the service
+        # directly must get a clear error, not a raw KeyError).
+        if mask not in STRATEGIES:
+            raise ValueError(
+                f"unknown mask {mask!r}, expected one of {sorted(STRATEGIES)}"
+            )
         # Detect first, then rewrite the text with the chosen strategy.
         findings = self.detect(text)
-        strategy = STRATEGIES[mask]
-        redacted = apply_mask(text, findings, strategy)
+        redacted = apply_mask(text, findings, STRATEGIES[mask])
         return redacted, findings

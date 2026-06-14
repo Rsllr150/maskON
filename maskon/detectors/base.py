@@ -6,14 +6,16 @@ the pattern, the type label, the confidence, and — if relevant — a validatio
 """
 
 import re
+from typing import ClassVar
 
 from maskon.models import Finding
 
 
 class Detector:
-    type: str  # PII label, e.g. "IBAN"
-    confidence: float  # confidence attached to every match of this detector
-    _pattern: re.Pattern[str]  # the shape to look for
+    # Class-level config, set by each subclass (not per-instance state).
+    type: ClassVar[str]  # PII label, e.g. "IBAN"
+    confidence: ClassVar[float]  # confidence attached to every match
+    _pattern: ClassVar[re.Pattern[str]]  # the shape to look for
 
     def _is_valid(self, candidate: str) -> bool:
         """Confirm a candidate. Default: accept (no checksum). Checksum
