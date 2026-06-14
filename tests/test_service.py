@@ -22,7 +22,7 @@ def test_findings_are_sorted_by_position():
 def test_output_has_no_overlaps():
     text = "call 06 12 34 56 78 or write a@b.com"
     findings = service.detect(text)
-    for earlier, later in zip(findings, findings[1:]):
+    for earlier, later in zip(findings, findings[1:], strict=False):
         assert earlier.end <= later.start
 
 

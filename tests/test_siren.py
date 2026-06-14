@@ -11,7 +11,7 @@ def test_finds_a_valid_siren():
     assert len(findings) == 1
     f = findings[0]
     assert f.type == "SIREN"
-    assert text[f.start:f.end] == "443061841"
+    assert text[f.start : f.end] == "443061841"
     assert f.confidence == 1.0
 
 
@@ -19,7 +19,7 @@ def test_tolerates_spaces():
     text = "Number 443 061 841 valid"
     findings = detector.detect(text)
     assert len(findings) == 1
-    assert text[findings[0].start:findings[0].end] == "443 061 841"
+    assert text[findings[0].start : findings[0].end] == "443 061 841"
 
 
 def test_ignores_bad_checksum():

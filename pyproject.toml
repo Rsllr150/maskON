@@ -8,3 +8,18 @@ requires-python = ">=3.12"
 # Let pytest find the `maskon` package from the project root.
 pythonpath = ["."]
 testpaths = ["tests"]
+
+[tool.ruff.lint]
+# E/F = pycodestyle + pyflakes (defaults); I = import sorting;
+# UP = modern syntax; B = common bug traps.
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+
+# Tests stay strict on real type errors, but pytest functions don't need
+# return annotations — the standard convention in serious Python projects.
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false

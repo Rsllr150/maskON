@@ -24,6 +24,18 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      # 4. Run the test suite. A failure here turns the check red.
+      # 4. Lint: catch bugs and style issues.
+      - name: Lint (ruff)
+        run: ruff check maskon tests
+
+      # 5. Format: fail if the code isn't formatted.
+      - name: Format check (ruff)
+        run: ruff format --check maskon tests
+
+      # 6. Types: strict static type checking.
+      - name: Type check (mypy)
+        run: mypy maskon tests
+
+      # 7. Tests: the suite must stay green.
       - name: Run tests
         run: pytest

@@ -11,7 +11,7 @@ def test_finds_a_spaced_iban():
     assert len(findings) == 1
     f = findings[0]
     assert f.type == "IBAN"
-    assert text[f.start:f.end] == "FR76 3000 6000 0112 3456 7890 189"
+    assert text[f.start : f.end] == "FR76 3000 6000 0112 3456 7890 189"
     assert f.confidence == 1.0
 
 
@@ -19,7 +19,7 @@ def test_finds_a_compact_iban():
     text = "account DE89370400440532013000 end"
     findings = detector.detect(text)
     assert len(findings) == 1
-    assert text[findings[0].start:findings[0].end] == "DE89370400440532013000"
+    assert text[findings[0].start : findings[0].end] == "DE89370400440532013000"
 
 
 def test_finds_two_ibans():
