@@ -21,14 +21,15 @@ exactly. Reproduce with `python -m scripts.evaluate`.
 
 | Type        | Precision | Recall | F1   |
 | ----------- | --------- | ------ | ---- |
+| CB          | 100%      | 100%   | 1.00 |
 | EMAIL       | 100%      | 100%   | 1.00 |
 | IBAN        | 100%      | 75%    | 0.86 |
 | NIR         | 100%      | 100%   | 1.00 |
 | SIREN       | 100%      | 100%   | 1.00 |
 | TEL         | 80%       | 80%    | 0.80 |
-| **Overall** | **94%**   | **88%**| **0.91** |
+| **Overall** | **94%**   | **89%**| **0.92** |
 
-The checksum detectors (SIREN, IBAN, NIR) are near-perfect on precision. The gaps are
+The checksum detectors (SIREN, IBAN, NIR, CB) are near-perfect on precision. The gaps are
 honest and known:
 
 - **IBAN recall** — a lowercase IBAN is missed (the regex expects uppercase).

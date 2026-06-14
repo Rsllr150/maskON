@@ -6,6 +6,7 @@ API will simply call this. Masking will be wired in later (redact()).
 """
 
 from maskon.detectors.base import Detector
+from maskon.detectors.carte_bancaire import CarteBancaireDetector
 from maskon.detectors.email import EmailDetector
 from maskon.detectors.iban import IbanDetector
 from maskon.detectors.nir import NirDetector
@@ -22,6 +23,7 @@ def _default_detectors() -> list[Detector]:
         SirenDetector(),
         IbanDetector(),
         NirDetector(),
+        CarteBancaireDetector(),
         EmailDetector(),
         TelDetector(),
     ]
