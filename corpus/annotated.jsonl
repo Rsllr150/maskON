@@ -18,3 +18,7 @@
 {"text": "Montant total : 1500 euros TTC", "spans": []}
 {"text": "Colis livre au 75008 Paris", "spans": []}
 {"text": "Commande #4521 validee hier", "spans": []}
+{"text": "NIR du patient : 2 55 08 33 521 088 27", "spans": [{"type": "NIR", "start": 17, "end": 38}]}
+{"text": "secu 180017512345660 enregistree", "spans": [{"type": "NIR", "start": 5, "end": 20}]}
+{"text": "ne en Corse, NIR 1 80 12 2A 116 001 85", "spans": [{"type": "NIR", "start": 17, "end": 38}]}
+{"text": "matricule 253088123456789 interne", "spans": []}
