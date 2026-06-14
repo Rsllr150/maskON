@@ -11,7 +11,7 @@ def test_finds_a_simple_email():
     assert len(findings) == 1
     f = findings[0]
     assert f.type == "EMAIL"
-    assert text[f.start:f.end] == "jean.dupont@example.com"
+    assert text[f.start : f.end] == "jean.dupont@example.com"
     # No checksum exists for emails → confidence below 1.0.
     assert f.confidence < 1.0
 
@@ -20,7 +20,7 @@ def test_finds_email_with_plus_and_subdomains():
     text = "alias a.b+tag@mail.example.co.uk works"
     findings = detector.detect(text)
     assert len(findings) == 1
-    assert text[findings[0].start:findings[0].end] == "a.b+tag@mail.example.co.uk"
+    assert text[findings[0].start : findings[0].end] == "a.b+tag@mail.example.co.uk"
 
 
 def test_finds_two_emails():

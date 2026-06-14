@@ -11,7 +11,7 @@ def test_finds_spaced_mobile():
     assert len(findings) == 1
     f = findings[0]
     assert f.type == "TEL"
-    assert text[f.start:f.end] == "06 12 34 56 78"
+    assert text[f.start : f.end] == "06 12 34 56 78"
     assert f.confidence < 1.0
 
 

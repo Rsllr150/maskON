@@ -14,6 +14,4 @@ from maskon.detectors.base import Detector
 class TelDetector(Detector):
     type = "TEL"
     confidence = 0.7  # shape only, no mathematical proof
-    _pattern = re.compile(
-        r"(?<!\d)(?:(?:\+33|0033)\s?|0)[1-9](?:[ .-]?\d{2}){4}(?!\d)"
-    )
+    _pattern = re.compile(r"(?<!\d)(?:(?:\+33|0033)\s?|0)[1-9](?:[ .-]?\d{2}){4}(?!\d)")

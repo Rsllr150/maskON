@@ -16,6 +16,6 @@ Strategy = Callable[[str, str], str]
 def apply_mask(text: str, findings: list[Finding], strategy: Strategy) -> str:
     # Right to left: highest start first, so untouched positions stay valid.
     for f in sorted(findings, key=lambda f: f.start, reverse=True):
-        replacement = strategy(text[f.start:f.end], f.type)
-        text = text[:f.start] + replacement + text[f.end:]
+        replacement = strategy(text[f.start : f.end], f.type)
+        text = text[: f.start] + replacement + text[f.end :]
     return text

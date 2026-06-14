@@ -6,3 +6,5 @@
 # when we build the API.
 
 pytest>=9
+ruff>=0.15
+mypy>=1.10
