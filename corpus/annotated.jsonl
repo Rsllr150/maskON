@@ -1,0 +1,20 @@
+{"text": "Contactez Jean au 06 12 34 56 78.", "spans": [{"type": "TEL", "start": 18, "end": 32}]}
+{"text": "Mon IBAN est FR76 3000 6000 0112 3456 7890 189 merci.", "spans": [{"type": "IBAN", "start": 13, "end": 46}]}
+{"text": "Email pro : jean.dupont@example.com", "spans": [{"type": "EMAIL", "start": 12, "end": 35}]}
+{"text": "SIREN 552032534 pour Danone", "spans": [{"type": "SIREN", "start": 6, "end": 15}]}
+{"text": "Virement vers DE89 3704 0044 0532 0130 00 demain", "spans": [{"type": "IBAN", "start": 14, "end": 41}]}
+{"text": "Appelle le 0142685300 avant midi", "spans": [{"type": "TEL", "start": 11, "end": 21}]}
+{"text": "ecris a marie.curie@radium.fr stp", "spans": [{"type": "EMAIL", "start": 8, "end": 29}]}
+{"text": "Notre SIREN : 443061841", "spans": [{"type": "SIREN", "start": 14, "end": 23}]}
+{"text": "Tel pro +33 6 98 76 54 32 dispo", "spans": [{"type": "TEL", "start": 8, "end": 25}]}
+{"text": "Contact : pierre.martin@corp.io", "spans": [{"type": "EMAIL", "start": 10, "end": 31}]}
+{"text": "RIB GB82 WEST 1234 5698 7654 32 ok", "spans": [{"type": "IBAN", "start": 4, "end": 31}]}
+{"text": "Standard : 01.42.68.53.00 au siege", "spans": [{"type": "TEL", "start": 11, "end": 25}]}
+{"text": "rib en minuscules : fr7630006000011234567890189", "spans": [{"type": "IBAN", "start": 20, "end": 47}]}
+{"text": "joignable au +33 (0)6 12 34 56 78", "spans": [{"type": "TEL", "start": 13, "end": 33}]}
+{"text": "Reference commande 0123456789 expediee", "spans": []}
+{"text": "Facture 443061842 du mois", "spans": []}
+{"text": "Reunion a 14h30 en salle B12", "spans": []}
+{"text": "Montant total : 1500 euros TTC", "spans": []}
+{"text": "Colis livre au 75008 Paris", "spans": []}
+{"text": "Commande #4521 validee hier", "spans": []}

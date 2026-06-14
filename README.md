@@ -13,6 +13,29 @@ Serious detection rather than two homemade regexes: each type is validated by a 
 
 > 🚧 Work in progress.
 
+## Detection quality
+
+Measured on a hand-annotated corpus (`corpus/annotated.jsonl`), with **exact span
+matching** — a finding counts only if its `(type, start, end)` matches the annotation
+exactly. Reproduce with `python -m scripts.evaluate`.
+
+| Type        | Precision | Recall | F1   |
+| ----------- | --------- | ------ | ---- |
+| EMAIL       | 100%      | 100%   | 1.00 |
+| IBAN        | 100%      | 75%    | 0.86 |
+| SIREN       | 100%      | 100%   | 1.00 |
+| TEL         | 80%       | 80%    | 0.80 |
+| **Overall** | **92%**   | **86%**| **0.89** |
+
+The checksum detectors (SIREN, IBAN) are near-perfect on precision. The gaps are
+honest and known:
+
+- **IBAN recall** — a lowercase IBAN is missed (the regex expects uppercase).
+- **TEL** — one false positive (`0123456789`, an order number read as a phone) and one
+  miss (`+33 (0)6 …`, parentheses break the pattern).
+
+These are exactly the cases the corpus is meant to surface and track over time.
+
 ## Run locally
 
 ```bash
