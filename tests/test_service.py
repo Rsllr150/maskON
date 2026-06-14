@@ -24,3 +24,10 @@ def test_output_has_no_overlaps():
     findings = service.detect(text)
     for earlier, later in zip(findings, findings[1:]):
         assert earlier.end <= later.start
+
+
+def test_redact_returns_masked_text_and_findings():
+    text = "IBAN FR7630006000011234567890189 mail a@b.com"
+    redacted, findings = service.redact(text, mask="label")
+    assert redacted == "IBAN [IBAN] mail [EMAIL]"
+    assert {f.type for f in findings} == {"IBAN", "EMAIL"}

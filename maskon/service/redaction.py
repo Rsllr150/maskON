@@ -10,6 +10,8 @@ from maskon.detectors.email import EmailDetector
 from maskon.detectors.iban import IbanDetector
 from maskon.detectors.siren import SirenDetector
 from maskon.detectors.tel import TelDetector
+from maskon.masking.apply import apply_mask
+from maskon.masking.strategies import STRATEGIES
 from maskon.models import Finding
 from maskon.service.merge import merge_overlapping
 
@@ -28,3 +30,10 @@ class RedactionService:
         for detector in self.detectors:
             findings += detector.detect(text)
         return merge_overlapping(findings)
+
+    def redact(self, text: str, mask: str = "label") -> tuple[str, list[Finding]]:
+        # Detect first, then rewrite the text with the chosen strategy.
+        findings = self.detect(text)
+        strategy = STRATEGIES[mask]
+        redacted = apply_mask(text, findings, strategy)
+        return redacted, findings
