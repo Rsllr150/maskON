@@ -8,6 +8,7 @@ API will simply call this. Masking will be wired in later (redact()).
 from maskon.detectors.base import Detector
 from maskon.detectors.email import EmailDetector
 from maskon.detectors.iban import IbanDetector
+from maskon.detectors.nir import NirDetector
 from maskon.detectors.siren import SirenDetector
 from maskon.detectors.tel import TelDetector
 from maskon.masking.apply import apply_mask
@@ -17,7 +18,13 @@ from maskon.service.merge import merge_overlapping
 
 
 def _default_detectors() -> list[Detector]:
-    return [SirenDetector(), IbanDetector(), EmailDetector(), TelDetector()]
+    return [
+        SirenDetector(),
+        IbanDetector(),
+        NirDetector(),
+        EmailDetector(),
+        TelDetector(),
+    ]
 
 
 class RedactionService:
