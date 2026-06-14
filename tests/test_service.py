@@ -1,5 +1,7 @@
 """Tests for the orchestration service — runs all detectors, merges results."""
 
+import pytest
+
 from maskon.service.redaction import RedactionService
 
 service = RedactionService()
@@ -31,3 +33,9 @@ def test_redact_returns_masked_text_and_findings():
     redacted, findings = service.redact(text, mask="label")
     assert redacted == "IBAN [IBAN] mail [EMAIL]"
     assert {f.type for f in findings} == {"IBAN", "EMAIL"}
+
+
+def test_redact_rejects_unknown_mask():
+    # The core validates its own input — no reliance on the API layer.
+    with pytest.raises(ValueError, match="unknown mask"):
+        service.redact("anything", mask="banana")
