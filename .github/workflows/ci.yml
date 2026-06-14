@@ -1,0 +1,29 @@
+# GitHub Actions workflow: run the test suite on every push and pull request.
+name: CI
+
+# When does this run? On any push, and on any pull request.
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    # The virtual machine GitHub spins up for us, fresh every time.
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Check out the repository code onto the machine.
+      - uses: actions/checkout@v4
+
+      # 2. Install the Python version the project targets.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # 3. Install the project's dependencies from requirements.txt.
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      # 4. Run the test suite. A failure here turns the check red.
+      - name: Run tests
+        run: pytest

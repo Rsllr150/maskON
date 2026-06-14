@@ -1,5 +1,7 @@
 # MaskON
 
+[![CI](https://github.com/Rsllr150/maskON/actions/workflows/ci.yml/badge.svg)](https://github.com/Rsllr150/maskON/actions/workflows/ci.yml)
+
 Microservice for **detecting and masking personally identifiable information (PII)**,
 specialized in French formats (IBAN, SIREN, NIR, phone numbers…).
 
