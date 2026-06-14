@@ -26,15 +26,15 @@ jobs:
 
       # 4. Lint: catch bugs and style issues.
       - name: Lint (ruff)
-        run: ruff check maskon tests
+        run: ruff check maskon tests scripts
 
       # 5. Format: fail if the code isn't formatted.
       - name: Format check (ruff)
-        run: ruff format --check maskon tests
+        run: ruff format --check maskon tests scripts
 
       # 6. Types: strict static type checking.
       - name: Type check (mypy)
-        run: mypy maskon tests
+        run: mypy maskon tests scripts
 
       # 7. Tests: the suite must stay green.
       - name: Run tests
