@@ -11,6 +11,12 @@ __pycache__/
 .ruff_cache/
 .mypy_cache/
 
+# Coverage artifacts
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+
 # Secrets & local config
 .env
 *.local

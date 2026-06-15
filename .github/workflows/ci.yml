@@ -10,15 +10,18 @@ jobs:
   test:
     # The virtual machine GitHub spins up for us, fresh every time.
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.12", "3.13"]
 
     steps:
       # 1. Check out the repository code onto the machine.
       - uses: actions/checkout@v4
 
-      # 2. Install the Python version the project targets.
+      # 2. Install Python — tested on each version of the matrix.
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: ${{ matrix.python-version }}
 
       # 3. Install the project's dependencies (runtime + dev tools).
       - name: Install dependencies
@@ -36,6 +39,7 @@ jobs:
       - name: Type check (mypy)
         run: mypy maskon tests scripts
 
-      # 7. Tests: the suite must stay green.
+      # 7. Tests + coverage: the suite must stay green and coverage must stay
+      #    above the threshold set in pyproject.toml ([tool.coverage.report]).
       - name: Run tests
-        run: pytest
+        run: pytest --cov=maskon --cov-report=term-missing

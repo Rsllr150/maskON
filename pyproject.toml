@@ -2,6 +2,7 @@
 name = "maskon"
 version = "0.1.0"
 description = "Detection and masking of personally identifiable information (PII), French formats."
+license = "AGPL-3.0-or-later"
 requires-python = ">=3.12"
 
 [tool.pytest.ini_options]
@@ -23,3 +24,11 @@ strict = true
 [[tool.mypy.overrides]]
 module = "tests.*"
 disallow_untyped_defs = false
+disallow_incomplete_defs = false
+
+[tool.coverage.run]
+source = ["maskon"]
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 95
