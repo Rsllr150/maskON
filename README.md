@@ -78,8 +78,13 @@ curl -X POST http://127.0.0.1:8000/redact \
 
 ### Streaming
 
-`/redact/stream` processes the text chunk by chunk so a multi-gigabyte log file
-never has to fit in memory. A PII can straddle a chunk boundary (an IBAN cut in
-half); a sliding **overlap buffer** of a few dozen characters carries the tail of
-each chunk forward so a split PII is still caught — proven by
+The streaming core (`maskon.streaming`) redacts input **chunk by chunk with bounded
+memory** — a huge log file read line by line never has to fit in RAM. A PII can
+straddle a chunk boundary (an IBAN cut in half); a sliding **overlap buffer** carries
+each chunk's tail forward so the split PII is still caught — proven by
 `tests/test_streaming.py::test_pii_split_across_two_chunks_is_still_redacted`.
+
+`POST /redact/stream` exposes this over HTTP and streams the redacted **response**.
+(It reads the request body before processing: true request-side streaming can't be
+exercised by the test client, so the endpoint stays fully tested. For unbounded
+inputs, use the `redact_stream()` core directly over a file iterator.)
