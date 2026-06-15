@@ -68,9 +68,11 @@ _STREAM_CHUNK = 4096
 async def redact_stream(
     request: Request, mask: Literal["label", "partial"] = "label"
 ) -> StreamingResponse:
-    # The response is streamed: we feed the text to the StreamRedactor chunk by
-    # chunk and yield redacted output as it becomes ready, so the redacted
-    # result never sits fully in memory.
+    # We read the request body fully here (true request-side streaming + a
+    # streaming response deadlocks under the half-duplex test client), then
+    # stream the *response*: the StreamRedactor is fed chunk by chunk and we
+    # yield redacted output as it becomes ready. The memory-bounded streaming
+    # logic lives in maskon.streaming; for unbounded inputs use it directly.
     text = (await request.body()).decode("utf-8")
 
     def generate() -> Iterator[bytes]:
