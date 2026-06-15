@@ -39,3 +39,13 @@ def test_redact_rejects_unknown_mask():
     # The core validates its own input — no reliance on the API layer.
     with pytest.raises(ValueError, match="unknown mask"):
         service.redact("anything", mask="banana")
+
+
+def test_redact_hash_is_consistent_for_same_value():
+    # The same email masked twice yields the same token → correlate without
+    # revealing.
+    text = "from a@b.com to a@b.com"
+    redacted, _ = service.redact(text, mask="hash")
+    tokens = [word for word in redacted.split() if word.startswith("email_")]
+    assert len(tokens) == 2
+    assert tokens[0] == tokens[1]
