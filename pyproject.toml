@@ -23,3 +23,11 @@ strict = true
 [[tool.mypy.overrides]]
 module = "tests.*"
 disallow_untyped_defs = false
+disallow_incomplete_defs = false
+
+[tool.coverage.run]
+source = ["maskon"]
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 95
