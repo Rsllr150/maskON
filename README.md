@@ -6,7 +6,7 @@
 ![Ruff](https://img.shields.io/badge/lint-ruff-261230)
 ![mypy](https://img.shields.io/badge/types-mypy%20strict-2A6DB2)
 ![Docker](https://img.shields.io/badge/Docker-ready-2496ED?logo=docker&logoColor=white)
-![License](https://img.shields.io/badge/license-MIT-green)
+![License](https://img.shields.io/badge/license-AGPL--3.0-blue)
 
 **Detect and mask personally identifiable information (PII), specialized in French formats.**
 
