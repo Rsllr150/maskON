@@ -128,6 +128,13 @@ Each detector ships a hand-set confidence (a prior). `python -m scripts.calibrat
 compares it to the precision actually measured on the corpus, so the priors can be
 tuned with evidence rather than guessed — without overfitting a small corpus.
 
+## Performance
+
+`python -m scripts.benchmark` measures throughput on synthetic text. On a laptop MaskON
+detects and redacts at **~10 MB/s**. Redaction assembles the output in a single O(n) pass
+— an earlier O(n²) version (rebuilding the whole string per finding) was ~130× slower,
+caught by this benchmark.
+
 ## How it works
 
 Strict layering — the testable logic never depends on HTTP.
