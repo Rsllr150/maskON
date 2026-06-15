@@ -5,7 +5,11 @@ service, converts findings to the HTTP schema, and returns. The intelligence
 lives in maskon/service and maskon/detectors.
 """
 
-from fastapi import FastAPI
+from collections.abc import Iterator
+from typing import Literal
+
+from fastapi import FastAPI, Request
+from fastapi.responses import StreamingResponse
 
 from maskon.api.schemas import (
     DetectorInfo,
@@ -17,6 +21,7 @@ from maskon.api.schemas import (
 )
 from maskon.models import Finding
 from maskon.service.redaction import RedactionService
+from maskon.streaming.stream import StreamRedactor
 
 app = FastAPI(
     title="MaskON",
@@ -54,3 +59,28 @@ def detectors() -> list[DetectorInfo]:
     return [
         DetectorInfo(type=d.type, confidence=d.confidence) for d in service.detectors
     ]
+
+
+_STREAM_CHUNK = 4096
+
+
+@app.post("/redact/stream")
+async def redact_stream(
+    request: Request, mask: Literal["label", "partial"] = "label"
+) -> StreamingResponse:
+    # The response is streamed: we feed the text to the StreamRedactor chunk by
+    # chunk and yield redacted output as it becomes ready, so the redacted
+    # result never sits fully in memory.
+    text = (await request.body()).decode("utf-8")
+
+    def generate() -> Iterator[bytes]:
+        redactor = StreamRedactor(mask=mask)
+        for i in range(0, len(text), _STREAM_CHUNK):
+            emitted = redactor.feed(text[i : i + _STREAM_CHUNK])
+            if emitted:
+                yield emitted.encode("utf-8")
+        tail = redactor.flush()
+        if tail:
+            yield tail.encode("utf-8")
+
+    return StreamingResponse(generate(), media_type="text/plain")

@@ -68,9 +68,18 @@ curl -X POST http://127.0.0.1:8000/redact \
 
 ## Endpoints
 
-| Endpoint          | Role                                          |
-| ----------------- | --------------------------------------------- |
-| `POST /detect`    | Locate PII without masking (audit / dry-run)  |
-| `POST /redact`    | Locate **and** mask (`mask`: `label` / `partial`) |
-| `GET  /detectors` | List active detectors and their confidence    |
-| `GET  /health`    | Liveness check                                |
+| Endpoint             | Role                                              |
+| -------------------- | ------------------------------------------------- |
+| `POST /detect`       | Locate PII without masking (audit / dry-run)      |
+| `POST /redact`       | Locate **and** mask (`mask`: `label` / `partial`) |
+| `POST /redact/stream`| Stream large input, redacted with bounded memory  |
+| `GET  /detectors`    | List active detectors and their confidence        |
+| `GET  /health`       | Liveness check                                     |
+
+### Streaming
+
+`/redact/stream` processes the text chunk by chunk so a multi-gigabyte log file
+never has to fit in memory. A PII can straddle a chunk boundary (an IBAN cut in
+half); a sliding **overlap buffer** of a few dozen characters carries the tail of
+each chunk forward so a split PII is still caught — proven by
+`tests/test_streaming.py::test_pii_split_across_two_chunks_is_still_redacted`.
