@@ -27,3 +27,48 @@
 {"text": "ref produit 4111111111111112 en stock", "spans": []}
 {"text": "Doublon FR7630006000011234567890189 DE89370400440532013000 a verifier", "spans": [{"type": "IBAN", "start": 8, "end": 35}, {"type": "IBAN", "start": 36, "end": 58}]}
 {"text": "Cartes 4111111111111111 4012888888881881 enregistrees", "spans": [{"type": "CB", "start": 7, "end": 23}, {"type": "CB", "start": 24, "end": 40}]}
+{"text": "Merci de contacter FR7630006000011234567890189 pour la suite du dossier.", "spans": [{"type": "IBAN", "start": 19, "end": 46}]}
+{"text": "La donnee saisie est DE89370400440532013000 a verifier.", "spans": [{"type": "IBAN", "start": 21, "end": 43}]}
+{"text": "Le client a communique GB82WEST12345698765432 hier matin.", "spans": [{"type": "IBAN", "start": 23, "end": 45}]}
+{"text": "Voici NL91ABNA0417164300 en piece jointe du mail.", "spans": [{"type": "IBAN", "start": 6, "end": 24}]}
+{"text": "Champ du formulaire : BE68539007547034.", "spans": [{"type": "IBAN", "start": 22, "end": 38}]}
+{"text": "Nous avons enregistre CH9300762011623852957 dans la base.", "spans": [{"type": "IBAN", "start": 22, "end": 43}]}
+{"text": "Information transmise : ES9121000418450200051332 ce jour.", "spans": [{"type": "IBAN", "start": 24, "end": 48}]}
+{"text": "Element a anonymiser : 4111111111111111 avant export.", "spans": [{"type": "CB", "start": 23, "end": 39}]}
+{"text": "Merci de contacter 4012888888881881 pour la suite du dossier.", "spans": [{"type": "CB", "start": 19, "end": 35}]}
+{"text": "La donnee saisie est 5555555555554444 a verifier.", "spans": [{"type": "CB", "start": 21, "end": 37}]}
+{"text": "Le client a communique 378282246310005 hier matin.", "spans": [{"type": "CB", "start": 23, "end": 38}]}
+{"text": "Voici 6011111111111117 en piece jointe du mail.", "spans": [{"type": "CB", "start": 6, "end": 22}]}
+{"text": "Champ du formulaire : 5105105105105100.", "spans": [{"type": "CB", "start": 22, "end": 38}]}
+{"text": "Nous avons enregistre 443061841 dans la base.", "spans": [{"type": "SIREN", "start": 22, "end": 31}]}
+{"text": "Information transmise : 552032534 ce jour.", "spans": [{"type": "SIREN", "start": 24, "end": 33}]}
+{"text": "Element a anonymiser : 732829320 avant export.", "spans": [{"type": "SIREN", "start": 23, "end": 32}]}
+{"text": "Merci de contacter 380129866 pour la suite du dossier.", "spans": [{"type": "SIREN", "start": 19, "end": 28}]}
+{"text": "La donnee saisie est 285123348201558 a verifier.", "spans": [{"type": "NIR", "start": 21, "end": 36}]}
+{"text": "Le client a communique 190037511604232 hier matin.", "spans": [{"type": "NIR", "start": 23, "end": 38}]}
+{"text": "Voici 288072B22100327 en piece jointe du mail.", "spans": [{"type": "NIR", "start": 6, "end": 21}]}
+{"text": "Champ du formulaire : 176115935012889.", "spans": [{"type": "NIR", "start": 22, "end": 37}]}
+{"text": "Nous avons enregistre jean.dupont@example.com dans la base.", "spans": [{"type": "EMAIL", "start": 22, "end": 45}]}
+{"text": "Information transmise : m.curie@radium.fr ce jour.", "spans": [{"type": "EMAIL", "start": 24, "end": 41}]}
+{"text": "Element a anonymiser : pierre.martin@corp.io avant export.", "spans": [{"type": "EMAIL", "start": 23, "end": 44}]}
+{"text": "Merci de contacter contact@maskon.dev pour la suite du dossier.", "spans": [{"type": "EMAIL", "start": 19, "end": 37}]}
+{"text": "La donnee saisie est a.b+tag@mail.co.uk a verifier.", "spans": [{"type": "EMAIL", "start": 21, "end": 39}]}
+{"text": "Le client a communique 06 12 34 56 78 hier matin.", "spans": [{"type": "TEL", "start": 23, "end": 37}]}
+{"text": "Voici 0142685300 en piece jointe du mail.", "spans": [{"type": "TEL", "start": 6, "end": 16}]}
+{"text": "Champ du formulaire : +33 6 98 76 54 32.", "spans": [{"type": "TEL", "start": 22, "end": 39}]}
+{"text": "Nous avons enregistre 07.81.23.45.67 dans la base.", "spans": [{"type": "TEL", "start": 22, "end": 36}]}
+{"text": "Information transmise : 01-44-55-66-77 ce jour.", "spans": [{"type": "TEL", "start": 24, "end": 38}]}
+{"text": "rib en minuscules fr7630006000011234567890189 a saisir", "spans": [{"type": "IBAN", "start": 18, "end": 45}]}
+{"text": "appel depuis +33 (0)6 11 22 33 44 svp", "spans": [{"type": "TEL", "start": 13, "end": 33}]}
+{"text": "groupement FR76 30006000 0112 3456 7890 189 inhabituel", "spans": [{"type": "IBAN", "start": 11, "end": 43}]}
+{"text": "numero etranger 00 33 6 55 44 33 22 note", "spans": [{"type": "TEL", "start": 16, "end": 35}]}
+{"text": "Commande #4521 expediee le 12 mars", "spans": []}
+{"text": "Facture 443061842 cle invalide ignoree", "spans": []}
+{"text": "Montant total 1500.50 euros TTC", "spans": []}
+{"text": "Adresse 75008 Paris 8e arrondissement", "spans": []}
+{"text": "Reunion le 06/12/2025 a 14h30 salle B", "spans": []}
+{"text": "Reference 0198765432 du lot expedie", "spans": []}
+{"text": "Sequence 4111111111111112 rejetee", "spans": []}
+{"text": "Aucune donnee personnelle dans ce texte", "spans": []}
+{"text": "Fiche : tel 06 12 34 56 78, IBAN FR7630006000011234567890189, mail jean.dupont@example.com", "spans": [{"type": "TEL", "start": 12, "end": 26}, {"type": "IBAN", "start": 33, "end": 60}, {"type": "EMAIL", "start": 67, "end": 90}]}
+{"text": "Entreprises SIREN 443061841 et 552032534 associees", "spans": [{"type": "SIREN", "start": 18, "end": 27}, {"type": "SIREN", "start": 31, "end": 40}]}

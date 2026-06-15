@@ -103,23 +103,26 @@ default is for local use only.
 
 ## Detection quality
 
-Measured on a hand-annotated corpus (`corpus/annotated.jsonl`) with **exact span matching** —
-a finding counts only if its `(type, start, end)` matches the annotation exactly. Reproduce
-with `python -m scripts.evaluate`.
+Measured on a **hand-built, synthetic** corpus of 74 annotated examples
+(`corpus/annotated.jsonl`) with **exact span matching** — a finding counts only if its
+`(type, start, end)` matches the annotation exactly. It deliberately includes hard cases
+(lowercase IBANs, parenthesized phones, order numbers shaped like phones) so the numbers
+stay honest. Reproduce with `python -m scripts.evaluate`.
 
 | Type        | Precision | Recall  | F1       |
 | ----------- | --------- | ------- | -------- |
 | CB          | 100%      | 100%    | 1.00     |
 | EMAIL       | 100%      | 100%    | 1.00     |
-| IBAN        | 100%      | 83%     | 0.91     |
+| IBAN        | 100%      | 81%     | 0.90     |
 | NIR         | 100%      | 100%    | 1.00     |
 | SIREN       | 100%      | 100%    | 1.00     |
-| TEL         | 80%       | 80%     | 0.80     |
-| **Overall** | **95%**   | **91%** | **0.93** |
+| TEL         | 83%       | 77%     | 0.80     |
+| **Overall** | **97%**   | **90%** | **0.93** |
 
-The gaps are honest and known: a lowercase IBAN is missed (regex expects uppercase), and TEL
-has one false positive (`0123456789`, an order number) and one miss (`+33 (0)6 …`,
-parentheses break the pattern). These are exactly the cases the corpus surfaces and tracks.
+The gaps are honest and known: the checksum types are near-perfect, while the shape-only
+detectors carry the residual errors — IBAN misses lowercase / irregularly-grouped numbers,
+and TEL both misses parenthesized/odd international formats and flags order numbers that look
+like phones. These are exactly the cases the corpus surfaces and tracks.
 
 Each detector ships a hand-set confidence (a prior). `python -m scripts.calibrate`
 compares it to the precision actually measured on the corpus, so the priors can be
