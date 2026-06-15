@@ -1,8 +1,10 @@
 """Apply a masking strategy to text, given the findings to replace.
 
-The applier owns the tricky part: replacing a span changes the text length, so
-every later position would shift. We avoid that by replacing from RIGHT to LEFT
-— once we touch a span, only characters after it move, and those are already done.
+We build the result in a single left-to-right pass: walk the (non-overlapping)
+findings in order, copy the text between them, and insert each mask. Offsets are
+read from the original text, so positions never shift. This is O(n) — the naive
+"rebuild the whole string per finding" approach is O(n²) and collapses on large
+inputs (a bug found by benchmarking).
 """
 
 from collections.abc import Callable
@@ -14,8 +16,11 @@ Strategy = Callable[[str, str], str]
 
 
 def apply_mask(text: str, findings: list[Finding], strategy: Strategy) -> str:
-    # Right to left: highest start first, so untouched positions stay valid.
-    for f in sorted(findings, key=lambda f: f.start, reverse=True):
-        replacement = strategy(text[f.start : f.end], f.type)
-        text = text[: f.start] + replacement + text[f.end :]
-    return text
+    parts: list[str] = []
+    cursor = 0
+    for f in sorted(findings, key=lambda f: f.start):
+        parts.append(text[cursor : f.start])
+        parts.append(strategy(text[f.start : f.end], f.type))
+        cursor = f.end
+    parts.append(text[cursor:])
+    return "".join(parts)
