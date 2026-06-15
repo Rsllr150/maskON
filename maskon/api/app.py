@@ -66,7 +66,7 @@ _STREAM_CHUNK = 4096
 
 @app.post("/redact/stream")
 async def redact_stream(
-    request: Request, mask: Literal["label", "partial"] = "label"
+    request: Request, mask: Literal["label", "partial", "hash"] = "label"
 ) -> StreamingResponse:
     # We read the request body fully here (true request-side streaming + a
     # streaming response deadlocks under the half-duplex test client), then

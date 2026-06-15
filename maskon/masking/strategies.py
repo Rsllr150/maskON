@@ -5,6 +5,12 @@ matched text and its type, and returns the replacement string. It knows nothing
 about positions or the rest of the text — that is the applier's job.
 """
 
+import hashlib
+import hmac
+import os
+
+from maskon.masking.apply import Strategy
+
 
 def label(original: str, pii_type: str) -> str:
     """Irreversible, readable: replace the value by its type, e.g. "[IBAN]"."""
@@ -19,8 +25,29 @@ def partial(original: str, pii_type: str) -> str:
     return original[:keep_start] + "****" + original[-keep_end:]
 
 
+def hash_strategy(key: bytes) -> Strategy:
+    """Deterministic pseudonymisation: the same value always maps to the same
+    token (e.g. "iban_3f2a9c1b"), so masked data can still be correlated without
+    revealing it. Keyed with HMAC-SHA256, so the mapping can't be reversed by
+    brute-forcing the (short) input space without the key.
+    """
+
+    def _hash(original: str, pii_type: str) -> str:
+        digest = hmac.new(key, original.encode("utf-8"), hashlib.sha256).hexdigest()
+        return f"{pii_type.lower()}_{digest[:8]}"
+
+    return _hash
+
+
+def _default_hash_key() -> bytes:
+    # Override in production: `export MASKON_HASH_KEY=...`. The default only
+    # exists for local convenience and must not be relied on for real data.
+    return os.environ.get("MASKON_HASH_KEY", "maskon-dev-key").encode("utf-8")
+
+
 # Registry so callers (service, API) can pick a strategy by name.
 STRATEGIES = {
     "label": label,
     "partial": partial,
+    "hash": hash_strategy(_default_hash_key()),
 }

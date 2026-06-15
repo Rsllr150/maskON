@@ -16,8 +16,8 @@ class DetectRequest(BaseModel):
 
 class RedactRequest(BaseModel):
     text: str
-    # Only these two strategies are valid; anything else → automatic 422.
-    mask: Literal["label", "partial"] = "label"
+    # Only these strategies are valid; anything else → automatic 422.
+    mask: Literal["label", "partial", "hash"] = "label"
 
 
 class FindingOut(BaseModel):

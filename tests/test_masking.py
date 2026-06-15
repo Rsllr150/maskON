@@ -41,3 +41,22 @@ def test_partial_keeps_edges():
     text = "IBAN FR7630006000011234567890189 end"
     findings = [Finding("IBAN", 5, 32, 1.0)]
     assert apply_mask(text, findings, partial) == "IBAN FR76****189 end"
+
+
+def test_hash_is_deterministic_and_typed():
+    from maskon.masking.strategies import hash_strategy
+
+    h = hash_strategy(b"secret")
+    token = h("FR7630006000011234567890189", "IBAN")
+    assert token == h("FR7630006000011234567890189", "IBAN")  # same value, same token
+    assert token.startswith("iban_")  # type-prefixed, lowercased
+    assert h("DIFFERENT", "IBAN") != token  # different value, different token
+
+
+def test_hash_depends_on_the_key():
+    from maskon.masking.strategies import hash_strategy
+
+    # HMAC, not a plain hash: changing the key changes the token.
+    token_a = hash_strategy(b"key-a")("v", "EMAIL")
+    token_b = hash_strategy(b"key-b")("v", "EMAIL")
+    assert token_a != token_b
