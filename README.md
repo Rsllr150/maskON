@@ -121,6 +121,10 @@ The gaps are honest and known: a lowercase IBAN is missed (regex expects upperca
 has one false positive (`0123456789`, an order number) and one miss (`+33 (0)6 …`,
 parentheses break the pattern). These are exactly the cases the corpus surfaces and tracks.
 
+Each detector ships a hand-set confidence (a prior). `python -m scripts.calibrate`
+compares it to the precision actually measured on the corpus, so the priors can be
+tuned with evidence rather than guessed — without overfitting a small corpus.
+
 ## How it works
 
 Strict layering — the testable logic never depends on HTTP.
