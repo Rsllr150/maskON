@@ -111,11 +111,11 @@ with `python -m scripts.evaluate`.
 | ----------- | --------- | ------- | -------- |
 | CB          | 100%      | 100%    | 1.00     |
 | EMAIL       | 100%      | 100%    | 1.00     |
-| IBAN        | 100%      | 75%     | 0.86     |
+| IBAN        | 100%      | 83%     | 0.91     |
 | NIR         | 100%      | 100%    | 1.00     |
 | SIREN       | 100%      | 100%    | 1.00     |
 | TEL         | 80%       | 80%     | 0.80     |
-| **Overall** | **94%**   | **89%** | **0.92** |
+| **Overall** | **95%**   | **91%** | **0.93** |
 
 The gaps are honest and known: a lowercase IBAN is missed (regex expects uppercase), and TEL
 has one false positive (`0123456789`, an order number) and one miss (`+33 (0)6 …`,
@@ -146,7 +146,7 @@ findings, keeping the most confident.
 | Language    | Python 3.12                                          |
 | API         | FastAPI · Uvicorn · Pydantic                         |
 | Core engine | Standard library only (`re`, `hmac`, `dataclasses`) |
-| Tests       | pytest                                              |
+| Tests       | pytest · Hypothesis (property-based)                 |
 | Quality     | Ruff (lint + format) · mypy `--strict`              |
 | Packaging   | Docker (slim, non-root, healthcheck)                |
 | CI          | GitHub Actions (lint → format → types → tests)      |
