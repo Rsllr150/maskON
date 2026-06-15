@@ -1,12 +1,4 @@
-# MaskON dependencies.
+# MaskON runtime dependencies — what the service needs to run.
 # Install with: pip install -r requirements.txt
-
-# --- Runtime: needed to run the service ---
 fastapi>=0.115
 uvicorn[standard]>=0.30
-
-# --- Development: tests, lint, types ---
-pytest>=9
-ruff>=0.15
-mypy>=1.10
-httpx>=0.27        # used by FastAPI's TestClient
