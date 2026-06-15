@@ -40,3 +40,17 @@ def test_list_detectors():
     response = client.get("/detectors")
     types = {d["type"] for d in response.json()}
     assert {"SIREN", "IBAN", "EMAIL", "TEL"} <= types
+
+
+def test_redact_stream():
+    body = "mail a@b.com and IBAN FR7630006000011234567890189"
+    response = client.post("/redact/stream?mask=label", content=body)
+    assert response.status_code == 200
+    assert "[EMAIL]" in response.text
+    assert "[IBAN]" in response.text
+    assert "a@b.com" not in response.text
+
+
+def test_redact_stream_invalid_mask():
+    response = client.post("/redact/stream?mask=banana", content="x")
+    assert response.status_code == 422
