@@ -20,9 +20,9 @@ jobs:
         with:
           python-version: "3.12"
 
-      # 3. Install the project's dependencies from requirements.txt.
+      # 3. Install the project's dependencies (runtime + dev tools).
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: pip install -r requirements-dev.txt
 
       # 4. Lint: catch bugs and style issues.
       - name: Lint (ruff)

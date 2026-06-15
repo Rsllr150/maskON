@@ -38,15 +38,24 @@ honest and known:
 
 These are exactly the cases the corpus is meant to surface and track over time.
 
+## Run with Docker
+
+```bash
+docker build -t maskon .
+docker run -p 8000:8000 maskon
+```
+
 ## Run locally
 
 ```bash
 python -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
+pip install -r requirements.txt        # runtime only
 uvicorn maskon.api.app:app --reload
 ```
 
 Interactive docs are then served at http://127.0.0.1:8000/docs.
+
+For development (tests, lint, types): `pip install -r requirements-dev.txt`.
 
 ## Example
 
