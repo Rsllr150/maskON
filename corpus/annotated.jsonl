@@ -25,3 +25,5 @@
 {"text": "Carte 4111 1111 1111 1111 enregistree", "spans": [{"type": "CB", "start": 6, "end": 25}]}
 {"text": "paiement par 5555555555554444 valide", "spans": [{"type": "CB", "start": 13, "end": 29}]}
 {"text": "ref produit 4111111111111112 en stock", "spans": []}
+{"text": "Doublon FR7630006000011234567890189 DE89370400440532013000 a verifier", "spans": [{"type": "IBAN", "start": 8, "end": 35}, {"type": "IBAN", "start": 36, "end": 58}]}
+{"text": "Cartes 4111111111111111 4012888888881881 enregistrees", "spans": [{"type": "CB", "start": 7, "end": 23}, {"type": "CB", "start": 24, "end": 40}]}
