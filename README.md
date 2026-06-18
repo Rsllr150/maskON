@@ -45,7 +45,7 @@ docker run -p 8000:8000 maskon
 
 # Or locally
 python -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
+pip install .
 uvicorn maskon.api.app:app --reload
 ```
 
@@ -171,7 +171,7 @@ findings, keeping the most confident.
 ## Development
 
 ```bash
-pip install -r requirements-dev.txt
+pip install -e ".[dev]"
 ruff check maskon tests scripts      # lint
 ruff format maskon tests scripts     # format
 mypy maskon tests scripts            # strict type check
