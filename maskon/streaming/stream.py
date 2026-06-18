@@ -11,7 +11,6 @@ spaces), otherwise a long PII could itself be cut and slip through.
 from collections.abc import Iterable, Iterator
 
 from maskon.masking.apply import Strategy, apply_mask
-from maskon.masking.strategies import STRATEGIES
 from maskon.models import Finding
 from maskon.service.redaction import RedactionService
 
@@ -38,13 +37,11 @@ class StreamRedactor:
         overlap: int = DEFAULT_OVERLAP,
         service: RedactionService | None = None,
     ) -> None:
-        if mask not in STRATEGIES:
-            raise ValueError(
-                f"unknown mask {mask!r}, expected one of {sorted(STRATEGIES)}"
-            )
-        self._strategy: Strategy = STRATEGIES[mask]
-        self._overlap = overlap
         self._service = service or RedactionService()
+        # The service owns strategy resolution (and the hash key); this also
+        # validates the mask name.
+        self._strategy: Strategy = self._service.strategy_for(mask)
+        self._overlap = overlap
         self._buffer = ""
 
     def feed(self, chunk: str) -> str:
