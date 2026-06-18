@@ -54,3 +54,11 @@ def test_redact_stream():
 def test_redact_stream_invalid_mask():
     response = client.post("/redact/stream?mask=banana", content="x")
     assert response.status_code == 422
+
+
+def test_metrics_endpoint_exposes_counters():
+    client.post("/redact", json={"text": "mail a@b.com, IBAN DE89370400440532013000"})
+    response = client.get("/metrics")
+    assert response.status_code == 200
+    assert "maskon_requests_total" in response.text
+    assert "maskon_findings_total" in response.text

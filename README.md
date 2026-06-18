@@ -75,6 +75,7 @@ curl -X POST http://127.0.0.1:8000/redact \
 | `POST /redact`        | Locate **and** mask (`mask`: `label`/`partial`/`hash`) |
 | `POST /redact/stream` | Stream large input, redacted with bounded memory   |
 | `GET  /detectors`     | List active detectors and their confidence         |
+| `GET  /metrics`       | Prometheus metrics (requests, findings, latency)   |
 | `GET  /health`        | Liveness check                                      |
 
 ### Streaming
