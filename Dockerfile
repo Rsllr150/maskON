@@ -2,18 +2,15 @@ FROM python:3.12-slim
 
 # Don't write .pyc files; stream logs straight out (no buffering).
 ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    PYTHONPATH=/app
+    PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
-# Install runtime dependencies first so this layer is cached when only code
-# changes. Note: requirements.txt holds runtime deps only (no test/lint tools).
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Application code (the package only — no tests, corpus or scripts).
+# Install the package and its runtime dependencies from pyproject (dev extras
+# are not installed, so the image stays lean — no pytest/ruff/mypy).
+COPY pyproject.toml ./
 COPY maskon ./maskon
+RUN pip install --no-cache-dir .
 
 # Run as an unprivileged user.
 RUN useradd --create-home appuser

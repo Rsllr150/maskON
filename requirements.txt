@@ -1,5 +1,0 @@
-# MaskON runtime dependencies — what the service needs to run.
-# Install with: pip install -r requirements.txt
-fastapi>=0.115
-uvicorn[standard]>=0.30
-prometheus-client>=0.20
