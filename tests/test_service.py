@@ -49,3 +49,11 @@ def test_redact_hash_is_consistent_for_same_value():
     tokens = [word for word in redacted.split() if word.startswith("email_")]
     assert len(tokens) == 2
     assert tokens[0] == tokens[1]
+
+
+def test_redact_hash_uses_the_injected_key():
+    # The HMAC key is injected at construction, not baked in at import.
+    text = "mail a@b.com"
+    redacted_a, _ = RedactionService(hash_key=b"key-1").redact(text, mask="hash")
+    redacted_b, _ = RedactionService(hash_key=b"key-2").redact(text, mask="hash")
+    assert redacted_a != redacted_b

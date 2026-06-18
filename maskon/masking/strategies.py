@@ -39,15 +39,16 @@ def hash_strategy(key: bytes) -> Strategy:
     return _hash
 
 
-def _default_hash_key() -> bytes:
-    # Override in production: `export MASKON_HASH_KEY=...`. The default only
-    # exists for local convenience and must not be relied on for real data.
+def default_hash_key() -> bytes:
+    # Read at service construction (not at import). Override in production:
+    # `export MASKON_HASH_KEY=...`. The default is for local use only.
     return os.environ.get("MASKON_HASH_KEY", "maskon-dev-key").encode("utf-8")
 
 
-# Registry so callers (service, API) can pick a strategy by name.
-STRATEGIES = {
-    "label": label,
-    "partial": partial,
-    "hash": hash_strategy(_default_hash_key()),
-}
+def build_strategies(hash_key: bytes) -> dict[str, Strategy]:
+    """The strategies available to a service, given the (injected) hash key."""
+    return {
+        "label": label,
+        "partial": partial,
+        "hash": hash_strategy(hash_key),
+    }
