@@ -56,6 +56,16 @@ def test_redact_stream_invalid_mask():
     assert response.status_code == 422
 
 
+def test_request_id_header_is_set():
+    response = client.get("/health")
+    assert "X-Request-ID" in response.headers
+
+
+def test_request_id_is_echoed_when_provided():
+    response = client.get("/health", headers={"X-Request-ID": "my-id-42"})
+    assert response.headers["X-Request-ID"] == "my-id-42"
+
+
 def test_metrics_endpoint_exposes_counters():
     client.post("/redact", json={"text": "mail a@b.com, IBAN DE89370400440532013000"})
     response = client.get("/metrics")

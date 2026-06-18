@@ -6,13 +6,18 @@ lives in maskon/service and maskon/detectors. Requests are instrumented for
 Prometheus (see maskon/api/metrics and the /metrics endpoint).
 """
 
+import logging
+import time
+import uuid
 from collections.abc import Iterator
 from typing import Literal
 
 from fastapi import FastAPI, Request, Response
 from fastapi.responses import StreamingResponse
 from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
+from starlette.middleware.base import RequestResponseEndpoint
 
+from maskon.api.logging_config import configure_logging
 from maskon.api.metrics import BYTES, FINDINGS, LATENCY, REQUESTS
 from maskon.api.schemas import (
     DetectorInfo,
@@ -34,6 +39,31 @@ app = FastAPI(
 
 # Stateless service → one shared instance is safe.
 service = RedactionService()
+
+configure_logging()
+_access_logger = logging.getLogger("maskon.access")
+
+
+@app.middleware("http")
+async def log_requests(
+    request: Request, call_next: RequestResponseEndpoint
+) -> Response:
+    # One structured JSON line per request, with a correlation id echoed back.
+    request_id = request.headers.get("x-request-id") or uuid.uuid4().hex
+    start = time.perf_counter()
+    response = await call_next(request)
+    response.headers["X-Request-ID"] = request_id
+    _access_logger.info(
+        "request",
+        extra={
+            "request_id": request_id,
+            "method": request.method,
+            "path": request.url.path,
+            "status": response.status_code,
+            "duration_ms": round((time.perf_counter() - start) * 1000, 2),
+        },
+    )
+    return response
 
 
 def _to_out(findings: list[Finding]) -> list[FindingOut]:

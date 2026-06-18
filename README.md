@@ -32,6 +32,8 @@ false-positive rate down.
 - **Streaming** — redact a 2 GB log file with bounded memory; a PII split across two
   chunks is still caught via a sliding overlap buffer.
 - **Measured quality** — precision/recall on a hand-annotated corpus, not promises.
+- **Observable** — structured JSON request logs (with a correlation id) and
+  Prometheus metrics at `/metrics`.
 - **Pure, testable core** — the detection logic has zero dependency on HTTP.
 
 ## Quick start
