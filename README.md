@@ -25,9 +25,10 @@ false-positive rate down.
 
 ## Features
 
-- **6 detectors** — IBAN, SIREN/SIRET, NIR, bank card (CB), email, French phone.
+- **7 detectors** — IBAN, SIREN, SIRET, NIR, bank card (CB), email, French phone.
 - **Checksum-validated** — shape (regex) *and* proof (Luhn / mod 97 / NIR key), so an
-  invoice number that merely *looks* like a SIREN is rejected.
+  invoice number that merely *looks* like a SIREN is rejected. A SIRET must pass both
+  its own key and its embedded SIREN's (La Poste's documented exception included).
 - **Three masking strategies** — `label`, `partial`, and keyed `hash`.
 - **Streaming** — redact a 2 GB log file with bounded memory; a PII split across two
   chunks is still caught via a sliding overlap buffer.
@@ -106,7 +107,7 @@ default is for local use only.
 
 ## Detection quality
 
-Measured on a **hand-built, synthetic** corpus of 74 annotated examples
+Measured on a **hand-built, synthetic** corpus of 82 annotated examples
 (`corpus/annotated.jsonl`) with **exact span matching** — a finding counts only if its
 `(type, start, end)` matches the annotation exactly. It deliberately includes hard cases
 (lowercase IBANs, parenthesized phones, order numbers shaped like phones) so the numbers
@@ -119,8 +120,9 @@ stay honest. Reproduce with `python -m scripts.evaluate`.
 | IBAN        | 100%      | 81%     | 0.90     |
 | NIR         | 100%      | 100%    | 1.00     |
 | SIREN       | 100%      | 100%    | 1.00     |
+| SIRET       | 100%      | 100%    | 1.00     |
 | TEL         | 83%       | 77%     | 0.80     |
-| **Overall** | **97%**   | **90%** | **0.93** |
+| **Overall** | **97%**   | **92%** | **0.94** |
 
 The gaps are honest and known: the checksum types are near-perfect, while the shape-only
 detectors carry the residual errors — IBAN misses lowercase / irregularly-grouped numbers,
@@ -154,7 +156,11 @@ evaluation/  → corpus + precision/recall metrics
 
 A detector is `shape (regex) + proof (checksum)`. Each finding carries a confidence
 (`1.0` for a checksum match, lower for shape-only), and the service merges overlapping
-findings, keeping the most confident.
+findings, keeping the most confident (then the longest, then the most specific type — so a
+14-digit number valid as both a card and a SIRET is labelled `SIRET`, whatever the detector
+order). Known trade-off: a 14-digit card whose first 9 digits also pass Luhn (~1 in 10) is
+masked whole but labelled `SIRET`, and a spaced SIREN followed by a 5-digit number can read as
+a spaced SIRET when the 14 digits happen to pass both keys.
 
 ## Tech stack
 
