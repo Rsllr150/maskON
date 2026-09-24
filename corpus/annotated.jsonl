@@ -72,3 +72,11 @@
 {"text": "Aucune donnee personnelle dans ce texte", "spans": []}
 {"text": "Fiche : tel 06 12 34 56 78, IBAN FR7630006000011234567890189, mail jean.dupont@example.com", "spans": [{"type": "TEL", "start": 12, "end": 26}, {"type": "IBAN", "start": 33, "end": 60}, {"type": "EMAIL", "start": 67, "end": 90}]}
 {"text": "Entreprises SIREN 443061841 et 552032534 associees", "spans": [{"type": "SIREN", "start": 18, "end": 27}, {"type": "SIREN", "start": 31, "end": 40}]}
+{"text": "SIRET 44306184100047 du siege", "spans": [{"type": "SIRET", "start": 6, "end": 20}]}
+{"text": "Etablissement SIRET : 443 061 841 00047", "spans": [{"type": "SIRET", "start": 22, "end": 39}]}
+{"text": "Facturer au 55203253400646 avant fin de mois.", "spans": [{"type": "SIRET", "start": 12, "end": 26}]}
+{"text": "Bureau de poste, SIRET 35600000009075.", "spans": [{"type": "SIRET", "start": 23, "end": 37}]}
+{"text": "SIREN 443061841, SIRET 44306184100047", "spans": [{"type": "SIREN", "start": 6, "end": 15}, {"type": "SIRET", "start": 23, "end": 37}]}
+{"text": "Numero 443 061 841 12345 a verifier", "spans": [{"type": "SIREN", "start": 7, "end": 18}]}
+{"text": "Carte Diners 30569309025904 expiree", "spans": [{"type": "CB", "start": 13, "end": 27}]}
+{"text": "Reference commande 44306184100048 annulee", "spans": []}

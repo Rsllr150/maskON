@@ -31,3 +31,11 @@ def test_finding_fully_inside_another_is_dropped():
     outer = Finding("IBAN", 0, 20, 1.0)
     inner = Finding("SIREN", 5, 14, 1.0)
     assert merge_overlapping([outer, inner]) == [outer]
+
+
+def test_exact_tie_prefers_the_more_specific_type():
+    # Same span, same confidence: SIRET beats CB, whatever the input order.
+    cb = Finding("CB", 0, 14, 1.0)
+    siret = Finding("SIRET", 0, 14, 1.0)
+    assert merge_overlapping([cb, siret]) == [siret]
+    assert merge_overlapping([siret, cb]) == [siret]

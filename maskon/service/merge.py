@@ -2,15 +2,22 @@
 
 Pure function. Two findings that cover the same characters cannot both be
 masked, so we keep the better one. Rule: higher confidence wins; on a tie, the
-longer span wins. Disjoint findings are all kept, ordered by position.
+longer span wins; on an exact tie, the more specific type wins (a 14-digit
+number valid as both SIRET and CB is a SIRET). Disjoint findings are all kept,
+ordered by position.
 """
 
 from maskon.models import Finding
 
+# Tie-break for identical (confidence, length): higher = more specific.
+# Makes SIRET-vs-CB independent of the order detectors are registered in.
+_SPECIFICITY = {"SIRET": 1}
 
-def _priority(f: Finding) -> tuple[float, int]:
-    # What makes a finding "better": more confidence, then more length.
-    return (f.confidence, f.end - f.start)
+
+def _priority(f: Finding) -> tuple[float, int, int]:
+    # What makes a finding "better": more confidence, then more length, then
+    # a more specific type.
+    return (f.confidence, f.end - f.start, _SPECIFICITY.get(f.type, 0))
 
 
 def merge_overlapping(findings: list[Finding]) -> list[Finding]:
