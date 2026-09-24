@@ -10,8 +10,11 @@ from maskon.detectors.carte_bancaire import CarteBancaireDetector
 from maskon.detectors.email import EmailDetector
 from maskon.detectors.iban import IbanDetector
 from maskon.detectors.nir import NirDetector
+from maskon.detectors.passeport import PasseportDetector
 from maskon.detectors.siren import SirenDetector
 from maskon.detectors.siret import SiretDetector
+from maskon.detectors.siv import SivDetector
+from maskon.detectors.spi import SpiDetector
 from maskon.detectors.tel import TelDetector
 from maskon.masking.apply import Strategy, apply_mask
 from maskon.masking.strategies import build_strategies, default_hash_key
@@ -28,6 +31,9 @@ def _default_detectors() -> list[Detector]:
         CarteBancaireDetector(),
         EmailDetector(),
         TelDetector(),
+        SpiDetector(),
+        PasseportDetector(),
+        SivDetector(),
     ]
 
 

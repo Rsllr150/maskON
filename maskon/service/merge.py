@@ -3,15 +3,16 @@
 Pure function. Two findings that cover the same characters cannot both be
 masked, so we keep the better one. Rule: higher confidence wins; on a tie, the
 longer span wins; on an exact tie, the more specific type wins (a 14-digit
-number valid as both SIRET and CB is a SIRET). Disjoint findings are all kept,
-ordered by position.
+number valid as both SIRET and CB is a SIRET, a 13-digit one valid as both SPI
+and CB is a SPI). Disjoint findings are all kept, ordered by position.
 """
 
 from maskon.models import Finding
 
 # Tie-break for identical (confidence, length): higher = more specific.
-# Makes SIRET-vs-CB independent of the order detectors are registered in.
-_SPECIFICITY = {"SIRET": 1}
+# Makes SIRET-vs-CB and SPI-vs-CB independent of the order detectors are
+# registered in.
+_SPECIFICITY = {"SIRET": 1, "SPI": 1}
 
 
 def _priority(f: Finding) -> tuple[float, int, int]:

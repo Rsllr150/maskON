@@ -80,3 +80,15 @@
 {"text": "Numero 443 061 841 12345 a verifier", "spans": [{"type": "SIREN", "start": 7, "end": 18}]}
 {"text": "Carte Diners 30569309025904 expiree", "spans": [{"type": "CB", "start": 13, "end": 27}]}
 {"text": "Reference commande 44306184100048 annulee", "spans": []}
+{"text": "Numero fiscal 0123456789211 sur l'avis", "spans": [{"type": "SPI", "start": 14, "end": 27}]}
+{"text": "Avis d'imposition, numero fiscal : 01 23 456 789 211", "spans": [{"type": "SPI", "start": 35, "end": 52}]}
+{"text": "SPI declarant 1234567890066", "spans": [{"type": "SPI", "start": 14, "end": 27}]}
+{"text": "Numero fiscal 1000000021104 du foyer", "spans": [{"type": "SPI", "start": 14, "end": 27}]}
+{"text": "Reference dossier 0123456789212 archivee", "spans": []}
+{"text": "Passeport n 12AB34567 valable", "spans": [{"type": "PASSEPORT", "start": 12, "end": 21}]}
+{"text": "Titulaire du passeport 18FR01234, delivre a Lyon", "spans": [{"type": "PASSEPORT", "start": 23, "end": 32}]}
+{"text": "Code produit 12ab34567 en stock", "spans": []}
+{"text": "Vehicule immatricule AB-123-CD en fourriere", "spans": [{"type": "IMMAT", "start": 21, "end": 30}]}
+{"text": "Plaque GH 456 JK stationnee rue Victor Hugo", "spans": [{"type": "IMMAT", "start": 7, "end": 16}]}
+{"text": "Ancienne plaque 123 AB 45 hors service", "spans": []}
+{"text": "Tel 06 12 34 56 78, vehicule EF-789-GH", "spans": [{"type": "TEL", "start": 4, "end": 18}, {"type": "IMMAT", "start": 29, "end": 38}]}

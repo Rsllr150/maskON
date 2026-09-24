@@ -27,6 +27,11 @@ VALID_PII = [
     "443 061 841 00047",  # SIRET, spaced
     "255083352108827",  # NIR
     "4111111111111111",  # bank card
+    "0123456789211",  # SPI
+    "01 23 456 789 211",  # SPI, spaced
+    "12AB34567",  # passport
+    "AB-123-CD",  # licence plate
+    "AB 123 CD",  # licence plate, spaced
 ]
 
 # Filler made only of letters/spaces: it can never create or merge into a PII
