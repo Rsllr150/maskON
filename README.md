@@ -25,10 +25,12 @@ false-positive rate down.
 
 ## Features
 
-- **7 detectors** — IBAN, SIREN, SIRET, NIR, bank card (CB), email, French phone.
-- **Checksum-validated** — shape (regex) *and* proof (Luhn / mod 97 / NIR key), so an
-  invoice number that merely *looks* like a SIREN is rejected. A SIRET must pass both
-  its own key and its embedded SIREN's (La Poste's documented exception included).
+- **10 detectors** — IBAN, SIREN, SIRET, NIR, tax number (SPI), bank card (CB), email,
+  French phone, French passport, licence plate (SIV, labelled `IMMAT`).
+- **Checksum-validated** — shape (regex) *and* proof (Luhn / mod 97 / NIR key / SPI
+  mod 511), so an invoice number that merely *looks* like a SIREN is rejected. A SIRET must
+  pass both its own key and its embedded SIREN's (La Poste's documented exception included).
+  Passport and plate numbers have no public key: they are matched on shape only.
 - **Three masking strategies** — `label`, `partial`, and keyed `hash`.
 - **Streaming** — redact a 2 GB log file with bounded memory; a PII split across two
   chunks is still caught via a sliding overlap buffer.
@@ -107,7 +109,7 @@ default is for local use only.
 
 ## Detection quality
 
-Measured on a **hand-built, synthetic** corpus of 82 annotated examples
+Measured on a **hand-built, synthetic** corpus of 94 annotated examples
 (`corpus/annotated.jsonl`) with **exact span matching** — a finding counts only if its
 `(type, start, end)` matches the annotation exactly. It deliberately includes hard cases
 (lowercase IBANs, parenthesized phones, order numbers shaped like phones) so the numbers
@@ -118,16 +120,21 @@ stay honest. Reproduce with `python -m scripts.evaluate`.
 | CB          | 100%      | 100%    | 1.00     |
 | EMAIL       | 100%      | 100%    | 1.00     |
 | IBAN        | 100%      | 81%     | 0.90     |
+| IMMAT       | 100%      | 100%    | 1.00     |
 | NIR         | 100%      | 100%    | 1.00     |
+| PASSEPORT   | 100%      | 100%    | 1.00     |
 | SIREN       | 100%      | 100%    | 1.00     |
 | SIRET       | 100%      | 100%    | 1.00     |
-| TEL         | 83%       | 77%     | 0.80     |
-| **Overall** | **97%**   | **92%** | **0.94** |
+| SPI         | 100%      | 100%    | 1.00     |
+| TEL         | 85%       | 79%     | 0.81     |
+| **Overall** | **97%**   | **93%** | **0.95** |
 
 The gaps are honest and known: the checksum types are near-perfect, while the shape-only
 detectors carry the residual errors — IBAN misses lowercase / irregularly-grouped numbers,
 and TEL both misses parenthesized/odd international formats and flags order numbers that look
-like phones. These are exactly the cases the corpus surfaces and tracks.
+like phones. These are exactly the cases the corpus surfaces and tracks. PASSEPORT and IMMAT
+are shape-only too; their perfect scores rest on a handful of examples (2 and 3), so read
+them as "no regression", not as a measured precision.
 
 Each detector ships a hand-set confidence (a prior). `python -m scripts.calibrate`
 compares it to the precision actually measured on the corpus, so the priors can be
@@ -148,7 +155,7 @@ Strict layering — the testable logic never depends on HTTP.
 api/         → HTTP shell (FastAPI), no logic
 service/     → orchestrate detectors, merge overlapping spans, apply masking
 detectors/   → one file per type (iban.py, nir.py …), pure logic
-  validators/→ checksums (luhn, mod97, cle_nir) — pure functions, heavily tested
+  validators/→ checksums (luhn, mod97, cle_nir, cle_spi) — pure functions, heavily tested
 masking/     → label / partial / hash
 streaming/   → chunking + sliding overlap buffer
 evaluation/  → corpus + precision/recall metrics
@@ -157,10 +164,12 @@ evaluation/  → corpus + precision/recall metrics
 A detector is `shape (regex) + proof (checksum)`. Each finding carries a confidence
 (`1.0` for a checksum match, lower for shape-only), and the service merges overlapping
 findings, keeping the most confident (then the longest, then the most specific type — so a
-14-digit number valid as both a card and a SIRET is labelled `SIRET`, whatever the detector
-order). Known trade-off: a 14-digit card whose first 9 digits also pass Luhn (~1 in 10) is
+14-digit number valid as both a card and a SIRET is labelled `SIRET`, and a 13-digit one
+valid as both a card and a SPI is labelled `SPI`, whatever the detector order). Known
+trade-off: a 14-digit card whose first 9 digits also pass Luhn (~1 in 10) is
 masked whole but labelled `SIRET`, and a spaced SIREN followed by a 5-digit number can read as
-a spaced SIRET when the 14 digits happen to pass both keys.
+a spaced SIRET when the 14 digits happen to pass both keys. Likewise, a 13-digit card that
+also passes the SPI key (~1 in 511) is masked whole but labelled `SPI`.
 
 ## Tech stack
 
