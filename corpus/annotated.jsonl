@@ -92,3 +92,8 @@
 {"text": "Plaque GH 456 JK stationnee rue Victor Hugo", "spans": [{"type": "IMMAT", "start": 7, "end": 16}]}
 {"text": "Ancienne plaque 123 AB 45 hors service", "spans": []}
 {"text": "Tel 06 12 34 56 78, vehicule EF-789-GH", "spans": [{"type": "TEL", "start": 4, "end": 18}, {"type": "IMMAT", "start": 29, "end": 38}]}
+{"text": "TVA FR64443061841 valide", "spans": [{"type": "TVA", "start": 4, "end": 17}]}
+{"text": "Numero TVA FR 64 443 061 841 du siege", "spans": [{"type": "TVA", "start": 11, "end": 28}]}
+{"text": "Facturer au FR27552032534 avant fin de mois.", "spans": [{"type": "TVA", "start": 12, "end": 25}]}
+{"text": "TVA FR40303265045 enregistree", "spans": [{"type": "TVA", "start": 4, "end": 17}]}
+{"text": "TVA FR65443061841 cle invalide", "spans": []}
