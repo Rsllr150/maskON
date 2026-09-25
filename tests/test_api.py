@@ -72,3 +72,38 @@ def test_metrics_endpoint_exposes_counters():
     assert response.status_code == 200
     assert "maskon_requests_total" in response.text
     assert "maskon_findings_total" in response.text
+
+
+def test_body_over_limit_is_rejected(monkeypatch):
+    monkeypatch.setenv("MASKON_MAX_BYTES", "100")
+    response = client.post("/redact", json={"text": "x" * 200})
+    assert response.status_code == 413
+
+
+def test_body_under_limit_is_accepted(monkeypatch):
+    monkeypatch.setenv("MASKON_MAX_BYTES", "100")
+    response = client.post("/redact", json={"text": "mail a@b.com"})
+    assert response.status_code == 200
+
+
+def test_chunked_body_over_limit_is_rejected(monkeypatch):
+    # A generator body is sent chunked: no Content-Length to trust.
+    monkeypatch.setenv("MASKON_MAX_BYTES", "100")
+    chunks = (b"x" * 40 for _ in range(5))
+    response = client.post("/redact/stream", content=chunks)
+    assert response.status_code == 413
+
+
+def test_chunked_json_body_over_limit_is_rejected(monkeypatch):
+    monkeypatch.setenv("MASKON_MAX_BYTES", "100")
+    chunks = (part for part in [b'{"text": "', b"x" * 200, b'"}'])
+    response = client.post(
+        "/detect", content=chunks, headers={"content-type": "application/json"}
+    )
+    assert response.status_code == 413
+
+
+def test_default_limit_is_one_megabyte(monkeypatch):
+    monkeypatch.delenv("MASKON_MAX_BYTES", raising=False)
+    assert client.post("/detect", json={"text": "x" * 999_000}).status_code == 200
+    assert client.post("/detect", json={"text": "x" * 1_000_001}).status_code == 413

@@ -1,6 +1,11 @@
 """Tests for the EMAIL detector — written before the implementation (TDD)."""
 
-from maskon.detectors.email import EmailDetector
+import re
+
+import hypothesis.strategies as st
+from hypothesis import given, settings
+
+from maskon.detectors.email import _EMAIL, EmailDetector
 
 detector = EmailDetector()
 
@@ -30,3 +35,12 @@ def test_finds_two_emails():
 
 def test_text_without_email():
     assert detector.detect("no address here, just @ and words") == []
+
+
+# The linear matcher must find exactly what the plain regex finds. Small
+# alphabet biased to the characters that make runs, dots and `@` interact.
+@settings(max_examples=2000)
+@given(st.text(alphabet="aZ9._%+-@. x!", max_size=40))
+def test_linear_matcher_equals_plain_finditer(text: str):
+    expected = [m.span() for m in re.compile(_EMAIL).finditer(text)]
+    assert [(f.start, f.end) for f in detector.detect(text)] == expected

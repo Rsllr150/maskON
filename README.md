@@ -83,6 +83,9 @@ curl -X POST http://127.0.0.1:8000/redact \
 | `GET  /metrics`       | Prometheus metrics (requests, findings, latency)   |
 | `GET  /health`        | Liveness check                                      |
 
+Request bodies are capped at **1 MB** (`413` beyond), set by `MASKON_MAX_BYTES`. Chunked
+bodies are counted as they arrive, so an oversized one is never buffered.
+
 ### Streaming
 
 The streaming core (`maskon.streaming`) redacts input **chunk by chunk with bounded
@@ -146,6 +149,12 @@ tuned with evidence rather than guessed — without overfitting a small corpus.
 detects and redacts at **~10 MB/s**. Redaction assembles the output in a single O(n) pass
 — an earlier O(n²) version (rebuilding the whole string per finding) was ~130× slower,
 caught by this benchmark.
+
+**No detector is super-linear on hostile input.** `tests/test_redos.py` feeds every
+detector long runs of the characters its pattern consumes and asserts that doubling the
+input no more than ~doubles the time; 1 MB of such input goes through the full service in
+under 1 s. (The EMAIL regex was quadratic: 1 MB of `a` took ~45 min. It now takes ~10 ms,
+with identical matches — checked by a Hypothesis test against the plain regex.)
 
 ## How it works
 
