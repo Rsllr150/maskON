@@ -39,16 +39,23 @@ def hash_strategy(key: bytes) -> Strategy:
     return _hash
 
 
-def default_hash_key() -> bytes:
-    # Read at service construction (not at import). Override in production:
-    # `export MASKON_HASH_KEY=...`. The default is for local use only.
-    return os.environ.get("MASKON_HASH_KEY", "maskon-dev-key").encode("utf-8")
+class MissingHashKey(ValueError):
+    """`hash` was requested but no key is configured."""
 
 
-def build_strategies(hash_key: bytes) -> dict[str, Strategy]:
-    """The strategies available to a service, given the (injected) hash key."""
-    return {
-        "label": label,
-        "partial": partial,
-        "hash": hash_strategy(hash_key),
-    }
+def default_hash_key() -> bytes | None:
+    # Read at service construction (not at import). Deliberately no built-in
+    # fallback: a public default key would make every token reversible by
+    # dictionary over short inputs (a phone number, a NIR). Unset → None.
+    key = os.environ.get("MASKON_HASH_KEY", "")
+    return key.encode("utf-8") or None
+
+
+def build_strategies(hash_key: bytes | None) -> dict[str, Strategy]:
+    """The strategies available to a service, given the (injected) hash key.
+    Without a key (None or empty), `hash` is not available — `label` and
+    `partial` still are."""
+    strategies: dict[str, Strategy] = {"label": label, "partial": partial}
+    if hash_key:
+        strategies["hash"] = hash_strategy(hash_key)
+    return strategies

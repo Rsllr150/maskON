@@ -37,18 +37,39 @@ false-positive rate down.
 - **Measured quality** — precision/recall on a hand-annotated corpus, not promises.
 - **Observable** — structured JSON request logs (with a correlation id) and
   Prometheus metrics at `/metrics`.
-- **Pure, testable core** — the detection logic has zero dependency on HTTP.
+- **A library first** — `pip install maskon` has no dependency and is typed (`py.typed`);
+  the HTTP service is an extra.
 
-## Quick start
+## As a library
+
+```bash
+pip install .                # the core: no dependency
+```
+
+```python
+import maskon
+
+maskon.redact("IBAN FR7630006000011234567890189")          # 'IBAN [IBAN]'
+maskon.redact(text, mask="hash", hash_key=b"secret")        # keyed, deterministic
+maskon.detect(text)                                         # list[maskon.Finding]
+for out in maskon.redact_stream(open("app.log")):           # bounded memory
+    ...
+```
+
+**The public API is exactly `maskon.__all__`**: `redact`, `detect`, `redact_stream`,
+`Finding`, `__version__`. It follows semver. Every other module (`maskon.service`,
+`maskon.detectors`, ...) is internal and may change in any release.
+
+## HTTP service
 
 ```bash
 # With Docker
 docker build -t maskon .
-docker run -p 8000:8000 maskon
+docker run -p 8000:8000 -e MASKON_HASH_KEY=<secret> maskon   # key needed for mask=hash
 
 # Or locally
 python -m venv .venv && source .venv/bin/activate
-pip install .
+pip install ".[api]"         # FastAPI, Uvicorn, Prometheus
 uvicorn maskon.api.app:app --reload
 ```
 
@@ -107,8 +128,10 @@ test client, so the endpoint stays fully tested. For unbounded inputs, use the
 | `partial` | `FR76****189`   | Keep the edges, for customer support                      |
 | `hash`    | `iban_3f2a9c1b` | Deterministic (same value → same token): correlate masked data without revealing it |
 
-`hash` is keyed with **HMAC-SHA256**. Set `MASKON_HASH_KEY` in production; the built-in
-default is for local use only.
+`hash` is keyed with **HMAC-SHA256**. There is **no default key** — a public one would
+make tokens reversible by dictionary over short inputs (a phone number, a NIR). Pass
+`hash_key=` or set `MASKON_HASH_KEY`; without either, `hash` raises `ValueError` (the API
+answers 500 and names the variable). `label` and `partial` need no key.
 
 ## Detection quality
 
@@ -190,7 +213,7 @@ also passes the SPI key (~1 in 511) is masked whole but labelled `SPI`.
 | Tests       | pytest · Hypothesis (property-based)                 |
 | Quality     | Ruff (lint + format) · mypy `--strict`              |
 | Packaging   | Docker (slim, non-root, healthcheck)                |
-| CI          | GitHub Actions (lint → format → types → tests)      |
+| CI          | GitHub Actions (lint → format → types → tests), plus the built wheel installed bare and type-checked by a strict consumer |
 
 ## Development
 

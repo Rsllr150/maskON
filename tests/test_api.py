@@ -2,7 +2,9 @@
 
 from fastapi.testclient import TestClient
 
+from maskon.api import app as api_app
 from maskon.api.app import app
+from maskon.service.redaction import RedactionService
 
 client = TestClient(app)
 
@@ -107,3 +109,29 @@ def test_default_limit_is_one_megabyte(monkeypatch):
     monkeypatch.delenv("MASKON_MAX_BYTES", raising=False)
     assert client.post("/detect", json={"text": "x" * 999_000}).status_code == 200
     assert client.post("/detect", json={"text": "x" * 1_000_001}).status_code == 413
+
+
+def test_hash_without_server_key_is_an_explicit_500(monkeypatch):
+    # The key is read once at startup: inject a keyless service.
+    monkeypatch.delenv("MASKON_HASH_KEY", raising=False)
+    monkeypatch.setattr(api_app, "service", RedactionService(hash_key=None))
+    response = client.post("/redact", json={"text": "mail a@b.com", "mask": "hash"})
+    assert response.status_code == 500
+    assert "MASKON_HASH_KEY" in response.json()["detail"]
+
+
+def test_stream_hash_without_key_fails_before_streaming(monkeypatch):
+    # Not a 200 with a truncated body: the error comes before the headers.
+    monkeypatch.delenv("MASKON_HASH_KEY", raising=False)
+    monkeypatch.setattr(api_app, "service", RedactionService(hash_key=None))
+    response = client.post("/redact/stream?mask=hash", content=b"mail a@b.com")
+    assert response.status_code == 500
+    assert "MASKON_HASH_KEY" in response.json()["detail"]
+
+
+def test_hash_with_server_key_works_on_both_endpoints(monkeypatch):
+    monkeypatch.setattr(api_app, "service", RedactionService(hash_key=b"server"))
+    whole = client.post("/redact", json={"text": "mail a@b.com", "mask": "hash"})
+    streamed = client.post("/redact/stream?mask=hash", content=b"mail a@b.com")
+    assert whole.json()["redacted"].startswith("mail email_")
+    assert streamed.text == whole.json()["redacted"]
