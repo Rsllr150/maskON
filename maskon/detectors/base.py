@@ -6,6 +6,7 @@ the pattern, the type label, the confidence, and — if relevant — a validatio
 """
 
 import re
+from collections.abc import Iterator
 from typing import ClassVar
 
 from maskon.models import Finding
@@ -22,9 +23,15 @@ class Detector:
         detectors override this with their validator."""
         return True
 
+    def _matches(self, text: str) -> Iterator[re.Match[str]]:
+        """Candidate matches, leftmost first. Default: the pattern's finditer.
+        A detector overrides this only to change *how* matches are found
+        (e.g. to stay linear), never *which* ones."""
+        return self._pattern.finditer(text)
+
     def detect(self, text: str) -> list[Finding]:
         findings: list[Finding] = []
-        for match in self._pattern.finditer(text):
+        for match in self._matches(text):
             if self._is_valid(match.group()):
                 findings.append(
                     Finding(
