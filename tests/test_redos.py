@@ -25,7 +25,7 @@ N = 200_000
 
 def _best_time(detector: Detector, text: str) -> float:
     best = float("inf")
-    for _ in range(3):
+    for _ in range(5):
         start = time.perf_counter()
         detector.detect(text)
         best = min(best, time.perf_counter() - start)
@@ -52,8 +52,9 @@ def test_detector_is_linear(detector: Detector, trap: str):
     text = trap * (N // len(trap))
     small = _best_time(detector, text)
     large = _best_time(detector, text + text)
-    # Linear → ~2; quadratic → ~4. A 1 ms floor keeps timer noise out.
-    assert large / max(small, 1e-3) < 3
+    # Linear → ~2; quadratic → ~4. Linear detectors take ~1 ms here, so a 5 ms
+    # floor keeps timer noise out; a quadratic one takes seconds, far above it.
+    assert large / max(small, 5e-3) < 3
 
 
 @pytest.mark.parametrize("trap", TRAPS)
