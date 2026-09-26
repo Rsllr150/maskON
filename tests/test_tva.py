@@ -68,6 +68,22 @@ def test_word_boundaries():
     assert detector.detect("XFR64443061841") == []
 
 
+def test_lowercase_full_number_not_detected():
+    assert detector.detect("fr64443061841") == []
+
+
+def test_wrong_grouping_not_detected():
+    assert detector.detect("FR 644 430 618 41") == []
+
+
+def test_glued_to_digits_not_detected():
+    assert detector.detect("FR644430618411") == []
+
+
+def test_key_00_not_matching_siren_not_detected():
+    assert detector.detect("FR00443061841") == []
+
+
 def test_text_without_tva():
     assert detector.detect("Hello, nothing here.") == []
 
