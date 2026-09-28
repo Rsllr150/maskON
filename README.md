@@ -195,10 +195,13 @@ evaluation/  → corpus + precision/recall metrics
 ```
 
 A detector is `shape (regex) + proof (checksum)`. Each finding carries a confidence
-(`1.0` for a checksum match, lower for shape-only), and the service merges overlapping
-findings, keeping the most confident (then the longest, then the most specific type — so a
+(`1.0` for a checksum match, lower for shape-only). Overlapping findings are merged
+**fail-closed**: the whole union of their spans is masked, so no character any detector
+matched comes out in clear. Priority only picks the label: the most confident (then the
+longest, then the most specific type — so a
 14-digit number valid as both a card and a SIRET is labelled `SIRET`, and a 13-digit one
-valid as both a card and a SPI is labelled `SPI`, whatever the detector order). Known
+valid as both a card and a SPI is labelled `SPI`, and a 15-digit one valid as both a card
+and a NIR is labelled `NIR`, whatever the detector order). Known
 trade-off: a 14-digit card whose first 9 digits also pass Luhn (~1 in 10) is
 masked whole but labelled `SIRET`, and a spaced SIREN followed by a 5-digit number can read as
 a spaced SIRET when the 14 digits happen to pass both keys. Likewise, a 13-digit card that

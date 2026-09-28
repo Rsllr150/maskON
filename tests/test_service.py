@@ -83,3 +83,14 @@ def test_explicit_empty_hash_key_is_refused(monkeypatch):
     monkeypatch.delenv("MASKON_HASH_KEY", raising=False)
     with pytest.raises(ValueError, match="needs a key"):
         RedactionService(hash_key=b"").redact("mail a@b.com", mask="hash")
+
+
+def test_nir_that_is_also_a_card_is_hidden_whatever_the_detector_order():
+    from maskon.detectors.carte_bancaire import CarteBancaireDetector
+    from maskon.detectors.nir import NirDetector
+
+    nir = "150013352100797"  # valid NIR key AND valid Luhn
+    for detectors in ([NirDetector(), CarteBancaireDetector()],
+                      [CarteBancaireDetector(), NirDetector()]):  # fmt: skip
+        service = RedactionService(detectors=detectors)
+        assert service.detect(nir)[0].type == "NIR"
