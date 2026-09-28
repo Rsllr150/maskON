@@ -5,8 +5,17 @@ consistent with the rest of the account number. Normalizes spaces and case
 itself so callers can pass the raw matched text.
 """
 
+import string
+
 # An IBAN is at most 34 characters; anything longer is not one.
 _MAX_LEN = 34
+
+# Each letter becomes its number: A→10, B→11, … Z→35; digits stay. One
+# precomputed table, not a per-character int(): mod97 runs once per IBAN-shaped
+# candidate, and a hostile text holds tens of thousands of them.
+_LETTERS = str.maketrans(
+    {c: str(ord(c) - ord("A") + 10) for c in string.ascii_uppercase}
+)
 
 
 def mod97(iban: str) -> bool:
@@ -20,10 +29,8 @@ def mod97(iban: str) -> bool:
     # 3. Move the first 4 characters (country code + check digits) to the end.
     rearranged = iban[4:] + iban[:4]
 
-    # 4. Replace each letter by a number: A→10, B→11, … Z→35; digits stay.
-    #    `int(char, 36)` reads a single base-36 character, which gives exactly
-    #    that mapping.
-    digits = "".join(str(int(char, 36)) for char in rearranged)
+    # 4. Replace each letter by its number (see _LETTERS).
+    digits = rearranged.translate(_LETTERS)
 
     # 5. Valid iff the whole number ≡ 1 (mod 97). Computed piecewise, 9 digits
     #    at a time (carrying the remainder), so no big integer is ever built.
