@@ -25,7 +25,7 @@ false-positive rate down.
 
 ## Features
 
-- **10 detectors** — IBAN, SIREN, SIRET, NIR, tax number (SPI), bank card (CB), email,
+- **11 detectors** — IBAN, SIREN, SIRET, VAT number (TVA), NIR, tax number (SPI), bank card (CB), email,
   French phone, French passport, licence plate (SIV, labelled `IMMAT`).
 - **Checksum-validated** — shape (regex) *and* proof (Luhn / mod 97 / NIR key / SPI
   mod 511), so an invoice number that merely *looks* like a SIREN is rejected. A SIRET must
@@ -135,7 +135,7 @@ answers 500 and names the variable). `label` and `partial` need no key.
 
 ## Detection quality
 
-Measured on a **hand-built, synthetic** corpus of 94 annotated examples
+Measured on a **hand-built, synthetic** corpus of 99 annotated examples
 (`corpus/annotated.jsonl`) with **exact span matching** — a finding counts only if its
 `(type, start, end)` matches the annotation exactly. It deliberately includes hard cases
 (lowercase IBANs, parenthesized phones, order numbers shaped like phones) so the numbers
@@ -153,7 +153,8 @@ stay honest. Reproduce with `python -m scripts.evaluate`.
 | SIRET       | 100%      | 100%    | 1.00     |
 | SPI         | 100%      | 100%    | 1.00     |
 | TEL         | 85%       | 79%     | 0.81     |
-| **Overall** | **97%**   | **93%** | **0.95** |
+| TVA         | 100%      | 100%    | 1.00     |
+| **Overall** | **98%**   | **93%** | **0.95** |
 
 The gaps are honest and known: the checksum types are near-perfect, while the shape-only
 detectors carry the residual errors — IBAN misses lowercase / irregularly-grouped numbers,

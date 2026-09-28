@@ -16,6 +16,7 @@ from maskon.detectors.siret import SiretDetector
 from maskon.detectors.siv import SivDetector
 from maskon.detectors.spi import SpiDetector
 from maskon.detectors.tel import TelDetector
+from maskon.detectors.tva import TvaDetector
 from maskon.masking.apply import Strategy, apply_mask
 from maskon.masking.strategies import (
     MissingHashKey,
@@ -38,6 +39,7 @@ def _default_detectors() -> list[Detector]:
         SpiDetector(),
         PasseportDetector(),
         SivDetector(),
+        TvaDetector(),
     ]
 
 
