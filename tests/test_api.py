@@ -130,7 +130,7 @@ def test_stream_hash_without_key_fails_before_streaming(monkeypatch):
 
 
 def test_hash_with_server_key_works_on_both_endpoints(monkeypatch):
-    monkeypatch.setattr(api_app, "service", RedactionService(hash_key=b"server"))
+    monkeypatch.setattr(api_app, "service", RedactionService(hash_key=b"s" * 16))
     whole = client.post("/redact", json={"text": "mail a@b.com", "mask": "hash"})
     streamed = client.post("/redact/stream?mask=hash", content=b"mail a@b.com")
     assert whole.json()["redacted"].startswith("mail email_")

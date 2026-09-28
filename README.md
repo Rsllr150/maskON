@@ -50,7 +50,7 @@ pip install .                # the core: no dependency
 import maskon
 
 maskon.redact("IBAN FR7630006000011234567890189")          # 'IBAN [IBAN]'
-maskon.redact(text, mask="hash", hash_key=b"secret")        # keyed, deterministic
+maskon.redact(text, mask="hash", hash_key=key)             # keyed (>= 16 bytes)
 maskon.detect(text)                                         # list[maskon.Finding]
 for out in maskon.redact_stream(open("app.log")):           # bounded memory
     ...
@@ -122,16 +122,33 @@ test client, so the endpoint stays fully tested. For unbounded inputs, use the
 
 ## Masking strategies
 
-| `mask`    | Example output  | Use case                                                  |
-| --------- | --------------- | --------------------------------------------------------- |
-| `label`   | `[IBAN]`        | Irreversible, readable                                    |
-| `partial` | `FR76****189`   | Keep the edges, for customer support                      |
-| `hash`    | `iban_3f2a9c1b` | Deterministic (same value → same token): correlate masked data without revealing it |
+| `mask`    | Example output             | Use case                                       |
+| --------- | -------------------------- | ---------------------------------------------- |
+| `label`   | `[IBAN]`                   | Irreversible, readable                         |
+| `partial` | `FR****0189`               | Show only what the type allows, for support    |
+| `hash`    | `iban_v1_3f2a9c1b0d4e7a65` | Deterministic (same value → same token): correlate masked data without revealing it |
 
-`hash` is keyed with **HMAC-SHA256**. There is **no default key** — a public one would
-make tokens reversible by dictionary over short inputs (a phone number, a NIR). Pass
-`hash_key=` or set `MASKON_HASH_KEY`; without either, `hash` raises `ValueError` (the API
-answers 500 and names the variable). `label` and `partial` need no key.
+`partial` is a rule per type, and the hidden part is always `****` (the length is not
+revealed):
+
+| Type | Shown | Example |
+| ---- | ----- | ------- |
+| `CB` | first 6 + last 4 (the PCI-DSS maximum), last 4 only under 16 digits | `411111****1111` |
+| `EMAIL` | first letter + domain | `j****@example.com` |
+| `TEL` | last 2 digits | `****78` |
+| `IBAN` | country + last 4 | `FR****0189` |
+| every other type | nothing: short identifiers are guessable from any edge | `****` |
+
+A value in which more than one detection fell (a phone inside an email, a NIR that is also
+a valid card number) is always `****`: its edges may belong to the other PII.
+
+`hash` is keyed with **HMAC-SHA256** and keeps 64 bits (16 hex). There is **no default
+key** — a public one would make tokens reversible by dictionary over short inputs (a
+phone number, a NIR). Pass `hash_key=` or set `MASKON_HASH_KEY`; without either, `hash`
+raises `ValueError` (the API answers 500 and names the variable). A key shorter than
+**16 bytes** is refused as soon as the service is built, whatever the mask. The token
+carries a key version (`hash_key_version=` or `MASKON_HASH_KEY_VERSION`, default `v1`), so
+a key can be rotated. `label` and `partial` need no key.
 
 ## Detection quality
 

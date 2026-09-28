@@ -113,3 +113,18 @@ def test_every_character_a_raw_detector_saw_is_masked(text: str):
 def test_redact_never_raises_on_any_text(text: str):
     for mask in ("label", "partial", "hash"):
         keyed.redact(text, mask=mask)
+
+
+@given(text=_hostile)
+@settings(max_examples=1000)
+@example(text="0612345678jean@example.com")
+@example(text="0000 0612 3456 78")
+def test_partial_shows_nothing_of_a_merged_span(text: str):
+    # A span that more than one raw finding fell into is fully hidden: its
+    # edges may belong to the losing PII.
+    partial = service.strategy_for("partial")
+    raw = [f for d in service.detectors for f in d.detect(text)]
+    for f in service.detect(text):
+        members = [r for r in raw if f.start <= r.start and r.end <= f.end]
+        if len(members) > 1:
+            assert partial(text[f.start : f.end], f.type) == "****"

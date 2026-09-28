@@ -56,17 +56,17 @@ def test_unknown_mask_is_a_clear_error():
 
 
 def test_hash_key_parameter_wins_over_the_environment(monkeypatch):
-    monkeypatch.setenv("MASKON_HASH_KEY", "env-key")
+    monkeypatch.setenv("MASKON_HASH_KEY", "env-key-0123456789abcdef")
     from_env = maskon.redact(TEXT, mask="hash")
-    from_param = maskon.redact(TEXT, mask="hash", hash_key=b"param-key")
+    from_param = maskon.redact(TEXT, mask="hash", hash_key=b"p" * 16)
     assert from_param != from_env
-    assert from_param == maskon.redact(TEXT, mask="hash", hash_key=b"param-key")
+    assert from_param == maskon.redact(TEXT, mask="hash", hash_key=b"p" * 16)
 
 
 def test_environment_key_is_read_on_each_call(monkeypatch):
-    monkeypatch.setenv("MASKON_HASH_KEY", "first")
+    monkeypatch.setenv("MASKON_HASH_KEY", "first-0123456789abcdef")
     first = maskon.redact(TEXT, mask="hash")
-    monkeypatch.setenv("MASKON_HASH_KEY", "second")
+    monkeypatch.setenv("MASKON_HASH_KEY", "second-0123456789abcdef")
     assert maskon.redact(TEXT, mask="hash") != first
 
 
@@ -97,8 +97,8 @@ def test_readme_lists_exactly_the_public_names():
 
 def test_redact_stream_uses_the_hash_key():
     chunks = [TEXT]
-    keyed = "".join(maskon.redact_stream(chunks, mask="hash", hash_key=b"k"))
-    assert keyed == maskon.redact(TEXT, mask="hash", hash_key=b"k")
+    keyed = "".join(maskon.redact_stream(chunks, mask="hash", hash_key=b"k" * 16))
+    assert keyed == maskon.redact(TEXT, mask="hash", hash_key=b"k" * 16)
 
 
 def test_version_is_the_installed_metadata():

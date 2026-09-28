@@ -22,6 +22,7 @@ from maskon.masking.strategies import (
     MissingHashKey,
     build_strategies,
     default_hash_key,
+    default_hash_key_version,
 )
 from maskon.models import Finding
 from maskon.service.merge import merge_overlapping
@@ -48,12 +49,19 @@ class RedactionService:
         self,
         detectors: list[Detector] | None = None,
         hash_key: bytes | None = None,
+        hash_key_version: str | None = None,
     ):
-        # Detectors and the HMAC hash key can be injected (handy for tests and
-        # for not baking config in at import time); otherwise use the defaults.
+        # Detectors and the HMAC hash key (and its version) can be injected
+        # (handy for tests and for not baking config in at import time);
+        # otherwise use the defaults. A too-short key raises WeakHashKey here.
         self.detectors = detectors if detectors is not None else _default_detectors()
         key = hash_key if hash_key is not None else default_hash_key()
-        self._strategies = build_strategies(key)
+        version = (
+            hash_key_version
+            if hash_key_version is not None
+            else default_hash_key_version()
+        )
+        self._strategies = build_strategies(key, version)
 
     def strategy_for(self, mask: str) -> Strategy:
         # Validate here so the core is self-sufficient, independent of any
@@ -67,7 +75,21 @@ class RedactionService:
             raise ValueError(
                 f"unknown mask {mask!r}, expected one of {sorted(self._strategies)}"
             )
+        if mask == "partial":
+            return self._partial
         return self._strategies[mask]
+
+    def _partial(self, original: str, pii_type: str) -> str:
+        # A merged span is the union of overlapping findings but carries only
+        # the winner's label, so it may hold another PII's characters (a TEL
+        # inside an EMAIL, a NIR that is also a CB). The per-type rule shows
+        # edges; it applies only when the value is exactly ONE raw detection,
+        # of that type, over all detectors — otherwise nothing is shown.
+        raw = [
+            (d.type, f.start, f.end) for d in self.detectors for f in d.detect(original)
+        ]
+        exact = raw == [(pii_type, 0, len(original))]
+        return self._strategies["partial"](original, pii_type) if exact else "****"
 
     def detect(self, text: str) -> list[Finding]:
         findings: list[Finding] = []
