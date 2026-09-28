@@ -7,15 +7,17 @@ Prometheus (see maskon/api/metrics and the /metrics endpoint).
 """
 
 import logging
+import os
 import time
 import uuid
 from collections.abc import Iterator
 from typing import Literal
 
-from fastapi import FastAPI, Request, Response
-from fastapi.responses import StreamingResponse
+from fastapi import FastAPI, HTTPException, Request, Response
+from fastapi.responses import JSONResponse, StreamingResponse
 from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 from starlette.middleware.base import RequestResponseEndpoint
+from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 from maskon.api.logging_config import configure_logging
 from maskon.api.metrics import BYTES, FINDINGS, LATENCY, REQUESTS
@@ -36,6 +38,53 @@ app = FastAPI(
     description="Detect and mask personally identifiable information (PII).",
     version="0.1.0",
 )
+
+_DEFAULT_MAX_BYTES = 1_000_000
+
+
+def _max_bytes() -> int:
+    # Read per request, so the limit follows the environment without a reload.
+    return int(os.environ.get("MASKON_MAX_BYTES", _DEFAULT_MAX_BYTES))
+
+
+class BodySizeLimit:
+    """Reject request bodies over MASKON_MAX_BYTES with 413.
+
+    Fast path: a declared Content-Length over the limit is refused before
+    reading anything. Chunked bodies carry no length, so bytes are counted as
+    they arrive and the read is aborted as soon as the limit is crossed — the
+    body is never buffered beyond it. The abort is an HTTPException raised
+    from `receive`, i.e. inside the route, where it becomes a normal 413.
+    """
+
+    def __init__(self, app: ASGIApp) -> None:
+        self.app = app
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+        limit = _max_bytes()
+        declared = dict(scope["headers"]).get(b"content-length", b"")
+        if declared.isdigit() and int(declared) > limit:
+            response = JSONResponse({"detail": "Request body too large"}, 413)
+            await response(scope, receive, send)
+            return
+        received = 0
+
+        async def limited_receive() -> Message:
+            nonlocal received
+            message = await receive()
+            if message["type"] == "http.request":
+                received += len(message.get("body", b""))
+                if received > limit:
+                    raise HTTPException(413, "Request body too large")
+            return message
+
+        await self.app(scope, limited_receive, send)
+
+
+app.add_middleware(BodySizeLimit)
 
 # Stateless service → one shared instance is safe.
 service = RedactionService()
