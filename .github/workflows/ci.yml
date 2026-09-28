@@ -43,3 +43,30 @@ jobs:
       #    above the threshold set in pyproject.toml ([tool.coverage.report]).
       - name: Run tests
         run: pytest --cov=maskon --cov-report=term-missing
+
+  # The published artifact, as a user gets it: build the wheel, install it in
+  # a fresh venv WITHOUT extras, then import it and type-check a consumer.
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Build the wheel
+        run: pip install build && python -m build --wheel --outdir dist
+
+      - name: Install it in a fresh venv, no extras
+        run: |
+          python -m venv /tmp/consumer
+          /tmp/consumer/bin/pip install dist/*.whl mypy
+          if /tmp/consumer/bin/pip show fastapi; then exit 1; fi
+
+      # Run from outside the checkout so `maskon` resolves to the wheel.
+      - name: Strict consumer
+        run: |
+          cp scripts/check_consumer.py /tmp/consumer/
+          cd /tmp/consumer
+          bin/mypy --strict check_consumer.py
+          bin/python check_consumer.py

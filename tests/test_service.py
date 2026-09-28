@@ -45,7 +45,7 @@ def test_redact_hash_is_consistent_for_same_value():
     # The same email masked twice yields the same token → correlate without
     # revealing.
     text = "from a@b.com to a@b.com"
-    redacted, _ = service.redact(text, mask="hash")
+    redacted, _ = RedactionService(hash_key=b"k").redact(text, mask="hash")
     tokens = [word for word in redacted.split() if word.startswith("email_")]
     assert len(tokens) == 2
     assert tokens[0] == tokens[1]
@@ -57,3 +57,29 @@ def test_redact_hash_uses_the_injected_key():
     redacted_a, _ = RedactionService(hash_key=b"key-1").redact(text, mask="hash")
     redacted_b, _ = RedactionService(hash_key=b"key-2").redact(text, mask="hash")
     assert redacted_a != redacted_b
+
+
+def test_hash_without_a_key_is_refused(monkeypatch):
+    # No built-in key: a public default would make tokens reversible.
+    monkeypatch.delenv("MASKON_HASH_KEY", raising=False)
+    with pytest.raises(ValueError, match="needs a key"):
+        RedactionService().redact("mail a@b.com", mask="hash")
+
+
+def test_empty_hash_key_counts_as_missing(monkeypatch):
+    monkeypatch.setenv("MASKON_HASH_KEY", "")
+    with pytest.raises(ValueError, match="needs a key"):
+        RedactionService().redact("mail a@b.com", mask="hash")
+
+
+def test_label_and_partial_need_no_key(monkeypatch):
+    monkeypatch.delenv("MASKON_HASH_KEY", raising=False)
+    assert RedactionService().redact("mail a@b.com")[0] == "mail [EMAIL]"
+    assert RedactionService().redact("mail a@b.com", mask="partial")[0] != ""
+
+
+def test_explicit_empty_hash_key_is_refused(monkeypatch):
+    # Same rule as an empty MASKON_HASH_KEY: an empty HMAC key is public.
+    monkeypatch.delenv("MASKON_HASH_KEY", raising=False)
+    with pytest.raises(ValueError, match="needs a key"):
+        RedactionService(hash_key=b"").redact("mail a@b.com", mask="hash")

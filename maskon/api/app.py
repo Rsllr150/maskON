@@ -19,6 +19,7 @@ from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 from starlette.middleware.base import RequestResponseEndpoint
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
+from maskon import __version__
 from maskon.api.logging_config import configure_logging
 from maskon.api.metrics import BYTES, FINDINGS, LATENCY, REQUESTS
 from maskon.api.schemas import (
@@ -29,6 +30,7 @@ from maskon.api.schemas import (
     RedactRequest,
     RedactResponse,
 )
+from maskon.masking.strategies import MissingHashKey
 from maskon.models import Finding
 from maskon.service.redaction import RedactionService
 from maskon.streaming.stream import StreamRedactor
@@ -36,7 +38,7 @@ from maskon.streaming.stream import StreamRedactor
 app = FastAPI(
     title="MaskON",
     description="Detect and mask personally identifiable information (PII).",
-    version="0.1.0",
+    version=__version__,
 )
 
 _DEFAULT_MAX_BYTES = 1_000_000
@@ -86,7 +88,8 @@ class BodySizeLimit:
 
 app.add_middleware(BodySizeLimit)
 
-# Stateless service → one shared instance is safe.
+# Stateless service → one shared instance is safe. It reads MASKON_HASH_KEY
+# once, at startup: every endpoint (streaming included) uses this instance.
 service = RedactionService()
 
 configure_logging()
@@ -113,6 +116,14 @@ async def log_requests(
         },
     )
     return response
+
+
+@app.exception_handler(MissingHashKey)
+async def missing_hash_key(request: Request, exc: MissingHashKey) -> JSONResponse:
+    # A server misconfiguration, not a client error: say what to set.
+    return JSONResponse(
+        {"detail": "hash masking is not configured: set MASKON_HASH_KEY"}, 500
+    )
 
 
 def _to_out(findings: list[Finding]) -> list[FindingOut]:
@@ -174,11 +185,14 @@ async def redact_stream(
     # yield redacted output as it becomes ready. The memory-bounded streaming
     # logic lives in maskon.streaming; for unbounded inputs use it directly.
     text = (await request.body()).decode("utf-8")
+    # Validate before the 200 headers go out: an error inside generate() would
+    # arrive as a truncated body under a success status.
+    service.strategy_for(mask)
     REQUESTS.labels("/redact/stream").inc()
     BYTES.inc(len(text))
 
     def generate() -> Iterator[bytes]:
-        redactor = StreamRedactor(mask=mask)
+        redactor = StreamRedactor(mask=mask, service=service)
         for i in range(0, len(text), _STREAM_CHUNK):
             emitted = redactor.feed(text[i : i + _STREAM_CHUNK])
             if emitted:

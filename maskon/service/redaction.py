@@ -17,7 +17,11 @@ from maskon.detectors.siv import SivDetector
 from maskon.detectors.spi import SpiDetector
 from maskon.detectors.tel import TelDetector
 from maskon.masking.apply import Strategy, apply_mask
-from maskon.masking.strategies import build_strategies, default_hash_key
+from maskon.masking.strategies import (
+    MissingHashKey,
+    build_strategies,
+    default_hash_key,
+)
 from maskon.models import Finding
 from maskon.service.merge import merge_overlapping
 
@@ -53,6 +57,10 @@ class RedactionService:
         # Validate here so the core is self-sufficient, independent of any
         # caller (a script using the service directly must get a clear error,
         # not a raw KeyError).
+        if mask == "hash" and mask not in self._strategies:
+            raise MissingHashKey(
+                "mask='hash' needs a key: pass hash_key=... or set MASKON_HASH_KEY"
+            )
         if mask not in self._strategies:
             raise ValueError(
                 f"unknown mask {mask!r}, expected one of {sorted(self._strategies)}"

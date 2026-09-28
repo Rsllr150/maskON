@@ -6,11 +6,11 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-# Install the package and its runtime dependencies from pyproject (dev extras
-# are not installed, so the image stays lean — no pytest/ruff/mypy).
+# Install the package with its HTTP extra from pyproject (dev extras are not
+# installed, so the image stays lean — no pytest/ruff/mypy).
 COPY pyproject.toml ./
 COPY maskon ./maskon
-RUN pip install --no-cache-dir .
+RUN pip install --no-cache-dir ".[api]"
 
 # Run as an unprivileged user.
 RUN useradd --create-home appuser

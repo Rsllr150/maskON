@@ -4,18 +4,22 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "maskon"
-version = "0.1.0"
+dynamic = ["version"]
 description = "Detection and masking of personally identifiable information (PII), French formats."
 license = "AGPL-3.0-or-later"
 requires-python = ">=3.12"
-dependencies = [
+# The core has no dependency: `import maskon` works on a bare Python.
+dependencies = []
+
+[project.optional-dependencies]
+# The HTTP service (maskon.api).
+api = [
     "fastapi>=0.115",
     "uvicorn[standard]>=0.30",
     "prometheus-client>=0.20",
 ]
-
-[project.optional-dependencies]
 dev = [
+    "maskon[api]",
     "pytest>=9",
     "pytest-cov>=5",
     "ruff>=0.15",
@@ -24,8 +28,15 @@ dev = [
     "hypothesis>=6",   # property-based tests
 ]
 
+[tool.setuptools.dynamic]
+version = {attr = "maskon.__version__"}
+
 [tool.setuptools.packages.find]
 include = ["maskon*"]
+
+# PEP 561: ship the marker so consumers' type checkers use our annotations.
+[tool.setuptools.package-data]
+maskon = ["py.typed"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
