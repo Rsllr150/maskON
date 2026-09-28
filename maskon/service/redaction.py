@@ -1,8 +1,9 @@
 """The orchestration service — the entry point for all business logic.
 
-It owns the list of detectors, runs every one of them on the text, and merges
-the results into a clean, non-overlapping list of findings. No HTTP here: the
-API will simply call this. Masking will be wired in later (redact()).
+It owns the list of detectors, normalises the text, runs every detector on
+that cleaned form, merges the results, and remaps each span onto the original
+(so masking still rewrites the caller's string). Strategies see the
+normalised value. No HTTP here: the API simply calls this.
 """
 
 from maskon.detectors.base import Detector
@@ -25,6 +26,7 @@ from maskon.masking.strategies import (
     default_hash_key_version,
 )
 from maskon.models import Finding
+from maskon.normalize import normalize
 from maskon.service.merge import merge_overlapping
 
 
@@ -75,9 +77,8 @@ class RedactionService:
             raise ValueError(
                 f"unknown mask {mask!r}, expected one of {sorted(self._strategies)}"
             )
-        if mask == "partial":
-            return self._partial
-        return self._strategies[mask]
+        strategy = self._partial if mask == "partial" else self._strategies[mask]
+        return lambda value, pii_type: strategy(normalize(value)[0], pii_type)
 
     def _partial(self, original: str, pii_type: str) -> str:
         # A merged span is the union of overlapping findings but carries only
@@ -92,10 +93,21 @@ class RedactionService:
         return self._strategies["partial"](original, pii_type) if exact else "****"
 
     def detect(self, text: str) -> list[Finding]:
+        normalized, offsets = normalize(text)
         findings: list[Finding] = []
         for detector in self.detectors:
-            findings += detector.detect(text)
-        return merge_overlapping(findings)
+            findings += detector.detect(normalized)
+        remapped = [
+            Finding(
+                type=f.type,
+                start=offsets[f.start],
+                end=offsets[f.end - 1] + 1,
+                confidence=f.confidence,
+            )
+            for f in merge_overlapping(findings)
+            if f.start < f.end
+        ]
+        return remapped
 
     def redact(self, text: str, mask: str = "label") -> tuple[str, list[Finding]]:
         strategy = self.strategy_for(mask)

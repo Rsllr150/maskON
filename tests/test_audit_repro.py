@@ -1,5 +1,5 @@
-"""Non-regression: the "Reproduire les constats" commands of AUDIT.md (§1, §4,
-§5, §9) must no longer leak or crash."""
+"""Non-regression: the "Reproduire les constats" commands of AUDIT.md (§1, §3,
+§4, §5, §9) must no longer leak or crash."""
 
 import re
 
@@ -20,6 +20,32 @@ def test_s1_merge_does_not_release_the_email():
 def test_s1_merge_does_not_release_the_phone_digits():
     out = maskon.redact("06 12 34 56 78jean@example.com")
     assert not any(c.isdigit() for c in out)
+
+
+def test_s3_nbsp_phone_is_masked():
+    assert maskon.redact("06\u00a012\u00a034\u00a056\u00a078") == "[TEL]"
+
+
+def test_s3_narrow_nbsp_iban_is_masked():
+    assert (
+        maskon.redact("FR76\u202f3000\u202f6000\u202f0112\u202f3456\u202f7890\u202f189")
+        == "[IBAN]"
+    )
+
+
+def test_s3_nbsp_iban_is_masked():
+    assert (
+        maskon.redact("FR76\u00a03000\u00a06000\u00a00112\u00a03456\u00a07890\u00a0189")
+        == "[IBAN]"
+    )
+
+
+def test_s3_zero_width_in_email_is_masked():
+    assert maskon.redact("jean\u200b@example.com") == "[EMAIL]"
+
+
+def test_s3_combining_mark_on_phone_is_masked():
+    assert maskon.redact("0\u03016 12 34 56 78") == "[TEL]"
 
 
 def test_s4_an_endless_iban_shape_does_not_crash():

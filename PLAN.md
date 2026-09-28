@@ -60,21 +60,42 @@ est verte.
 
 Voir AUDIT §2, §3.
 
-- [ ] Normalisation : NFKC, espaces Unicode (U+00A0, U+202F…) vers espace,
-      suppression des zero-width, avec une **table d'offsets** vers le texte
-      original
-- [ ] Streaming : `max_len` par détecteur, `overlap` dérivé
-      (`max(max_len)` + marge de contexte), jamais de coupe dans un token
-- [ ] Généraliser `test_streaming_equals_batch_for_any_chunking` à un
-      générateur hostile (chiffres, lettres, `@.-` et espaces)
+### Lot 4a : normalisation
 
-**Acceptation :** téléphone et IBAN en NBSP masqués ;
-`443061841.` + 80 × `a` + `@example.com` en streaming donne `[SIREN]`
-comme le batch (constaté en revue du lot 3 : la coupe émet le SIREN avant
-que l'email n'arrive) ; un email de 254
-caractères passe en streaming sans fuite ; propriété stream == batch verte
-sur le générateur hostile.
+- [x] Normalisation : NFKC caractère par caractère, espaces Unicode
+      (U+00A0, U+202F…) vers espace, suppression des Cf et Mn, avec une
+      **table d'offsets** vers le texte original
+
+**Acceptation :** téléphone et IBAN en NBSP masqués, email avec zero-width
+et `0\u03016 12 34 56 78` (marque combinante) masqués.
 **Méthode :** cycle `og`.
+
+### Lot 4b : max_len par détecteur
+
+- [ ] Borne de l'email à 254 caractères au total
+- [ ] `max_len` ClassVar sur chaque détecteur
+- [ ] Propriété : aucun finding plus long que `max_len`
+
+**Méthode :** cycle `flux`.
+
+### Lot 4c : streaming
+
+- [ ] `overlap` dérivé = `max(max_len)` + marge 8 ; jamais de coupe dans un
+      token `[A-Za-z0-9._%+@-]`
+- [ ] Double plafond 4 096 normalisés / 65 536 originaux
+- [ ] stream == batch strict sous le plafond ; « au moins autant masqué »
+      au-delà
+- [ ] Remplacer `test_streaming_equals_batch_for_any_chunking` par un
+      générateur hostile (chiffres, lettres, `@.-`, espaces, NBSP, U+202F,
+      U+200B, U+0301, PII valides insérées), borné sous le plafond, pour
+      `label`, `partial` et `hash`
+
+**Acceptation :** `443061841.` + 80 × `a` + `@example.com` en streaming
+donne `[SIREN]` comme le batch (constaté en revue du lot 3 : la coupe
+émet le SIREN avant que l'email n'arrive) ; un email de 254 caractères
+passe en streaming sans fuite ; propriété stream == batch verte sur le
+générateur hostile.
+**Méthode :** cycle `flux`.
 
 ## Lot 5 : une précision honnête 🟠
 
@@ -140,13 +161,15 @@ Voir AUDIT §10 et § « Outillage ».
       ce qui **n'est pas** détecté, les faux négatifs mesurés
 - [ ] Modèle de menace : entrée non fiable, taille, encodage, contournements
       connus (homoglyphes)
+- [ ] Chiffres non latins (`\d` Unicode : arabes-indiens, etc.) : décider
+      un traitement explicite (NFKC ne les convertit pas)
 - [ ] CLI : `maskon redact < app.log > clean.log`
 - [ ] `maskon.logging.RedactingFilter`, à brancher en une ligne
 - [ ] API : `Finding` gelé (`frozen=True, slots=True`), type en `StrEnum`
       exporté, instance par défaut en cache
 - [x] Dette : l'égalité NIR/CB sur 15 chiffres dépend encore de l'ordre des
       détecteurs
-- [ ] Dette : docstrings périmées (`luhn.py:4`, `redaction.py:5`)
+- [ ] Dette : docstring périmée (`luhn.py:4` ; `redaction.py:5` réglée au lot 4a)
 - [ ] Dette : `SpiDetector._is_valid` accepte un groupement mélangé que
       `detect` refuse
 - [ ] Dette : `\s?` après `+33` dans TEL, incohérent avec `[ .-]`
