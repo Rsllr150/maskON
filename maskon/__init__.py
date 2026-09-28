@@ -31,15 +31,25 @@ def detect(text: str) -> list[Finding]:
     return RedactionService().detect(text)
 
 
-def redact(text: str, mask: Mask = "label", *, hash_key: bytes | None = None) -> str:
-    """Return `text` with every PII masked.
+def redact(
+    text: str,
+    mask: Mask = "label",
+    *,
+    hash_key: bytes | None = None,
+    hash_key_version: str | None = None,
+) -> str:
+    """Return `text` with every PII masked. Never raises on any text.
 
-    `mask`: "label" → `[IBAN]`, "partial" → `FR76****189`, "hash" → a keyed,
-    deterministic token. `hash_key` keys the hash; when omitted, the
-    MASKON_HASH_KEY environment variable is read on each call. There is no
-    default key: `hash` without one raises ValueError.
+    `mask`: "label" → `[IBAN]`, "partial" → what the type can safely show
+    (`FR****0189`, `j****@example.com`, `****` for a SIREN), "hash" → a keyed,
+    deterministic token (`iban_v1_3f2a9c1b0d4e7a65`). `hash_key` keys the hash
+    and must be at least 16 bytes; when omitted, the MASKON_HASH_KEY
+    environment variable is read on each call. There is no default key: `hash`
+    without one raises ValueError. `hash_key_version` (default
+    MASKON_HASH_KEY_VERSION, else "v1") goes into the token, for key rotation.
     """
-    redacted, _ = RedactionService(hash_key=hash_key).redact(text, mask=mask)
+    service = RedactionService(hash_key=hash_key, hash_key_version=hash_key_version)
+    redacted, _ = service.redact(text, mask=mask)
     return redacted
 
 
@@ -48,6 +58,7 @@ def redact_stream(
     mask: Mask = "label",
     *,
     hash_key: bytes | None = None,
+    hash_key_version: str | None = None,
     overlap: int = DEFAULT_OVERLAP,
 ) -> Iterator[str]:
     """Redact an iterable of text chunks with bounded memory, yielding output.
@@ -55,6 +66,6 @@ def redact_stream(
     A PII split across two chunks is still caught, provided `overlap` exceeds
     the longest PII (the default does).
     """
-    service = RedactionService(hash_key=hash_key)
+    service = RedactionService(hash_key=hash_key, hash_key_version=hash_key_version)
     service.strategy_for(mask)  # fail now, like redact(), not at first next()
     return _redact_stream(chunks, mask=mask, overlap=overlap, service=service)

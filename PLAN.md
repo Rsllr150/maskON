@@ -31,21 +31,25 @@ Les constats, avec leurs commandes de reproduction, sont dans
 
 ---
 
-## Lot 3 : ne rien laisser passer 🔴
+## ✅ Lot 3 : ne rien laisser passer
 
 Voir AUDIT §1, §4, §5, §9.
 
-- [ ] Fusion : masquer **l'union** des spans qui se chevauchent ; la priorité
+- [x] Fusion : masquer **l'union** des spans qui se chevauchent ; la priorité
       ne choisit que le label (`[SIREN].contact@example.com` ne doit plus exister)
-- [ ] Propriété Hypothesis : tout caractère couvert par un détecteur brut est
+- [x] Propriété Hypothesis : tout caractère couvert par un détecteur brut est
       masqué dans la sortie
-- [ ] IBAN borné à 34 caractères, mod 97 incrémental ; retirer le `xfail`
+- [x] IBAN borné à 34 caractères, mod 97 incrémental ; retirer le `xfail`
       de `test_redos.py`
-- [ ] Contrat : `redact()` ne lève **jamais** d'exception sur du texte
-- [ ] `partial` par type : CB 6 premiers + 4 derniers au maximum, SIREN/NIR
-      2 derniers au maximum, email première lettre + domaine
-- [ ] Hash : 64 bits au moins (16 hex), clé d'au moins 16 octets, version dans
-      le token (`iban_v1_…`)
+- [x] Contrat : `redact()` ne lève **jamais** d'exception sur du texte
+- [x] `partial` par type : CB 6 premiers + 4 derniers au maximum, email
+      première lettre + domaine, TEL 2 derniers, IBAN pays + 4 derniers,
+      SIREN/NIR et autres : rien (`****`) ; une valeur où tombent plusieurs
+      détections : `****`
+- [x] Hash : 64 bits au moins (16 hex), clé d'au moins 16 octets, version dans
+      le token (`iban_v1_…`, version configurable)
+- [x] NIR dans `_SPECIFICITY` : l'égalité NIR/CB ne dépend plus de l'ordre
+      des détecteurs
 
 **Acceptation :** chaque commande de repro de l'AUDIT (§ « Reproduire ») ne
 fuit plus et ne plante plus ; ce sont des tests de non-régression ; la suite
@@ -64,7 +68,10 @@ Voir AUDIT §2, §3.
 - [ ] Généraliser `test_streaming_equals_batch_for_any_chunking` à un
       générateur hostile (chiffres, lettres, `@.-` et espaces)
 
-**Acceptation :** téléphone et IBAN en NBSP masqués ; un email de 254
+**Acceptation :** téléphone et IBAN en NBSP masqués ;
+`443061841.` + 80 × `a` + `@example.com` en streaming donne `[SIREN]`
+comme le batch (constaté en revue du lot 3 : la coupe émet le SIREN avant
+que l'email n'arrive) ; un email de 254
 caractères passe en streaming sans fuite ; propriété stream == batch verte
 sur le générateur hostile.
 **Méthode :** cycle `og`.
@@ -137,7 +144,7 @@ Voir AUDIT §10 et § « Outillage ».
 - [ ] `maskon.logging.RedactingFilter`, à brancher en une ligne
 - [ ] API : `Finding` gelé (`frozen=True, slots=True`), type en `StrEnum`
       exporté, instance par défaut en cache
-- [ ] Dette : l'égalité NIR/CB sur 15 chiffres dépend encore de l'ordre des
+- [x] Dette : l'égalité NIR/CB sur 15 chiffres dépend encore de l'ordre des
       détecteurs
 - [ ] Dette : docstrings périmées (`luhn.py:4`, `redaction.py:5`)
 - [ ] Dette : `SpiDetector._is_valid` accepte un groupement mélangé que
@@ -153,8 +160,9 @@ Voir AUDIT §10 et § « Outillage ».
 
 - [x] `pip install .` sans dépendance, typé, API en quelques fonctions
 - [x] Aucune regex super-linéaire, prouvé par des tests
-- [ ] Rien de détecté ne sort en clair, prouvé par une propriété (lot 3)
-- [ ] Aucune entrée ne fait planter `redact()` (lot 3)
+- [x] Rien de détecté ne sort en clair, prouvé par une propriété (lot 3 ;
+      en streaming : lot 4)
+- [x] Aucune entrée ne fait planter `redact()` (lot 3)
 - [ ] Chaque chiffre du README est reproductible par une commande et tient
       hors du corpus maison (lot 5)
 - [ ] Ce que l'outil **ne** fait **pas** est écrit (lot 8)

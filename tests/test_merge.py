@@ -18,10 +18,31 @@ def test_keeps_disjoint_findings_sorted():
     assert merge_overlapping([a, b]) == [b, a]
 
 
-def test_overlap_keeps_higher_confidence():
+def test_overlap_takes_the_label_of_the_higher_confidence_over_the_union():
     weak = Finding("TEL", 0, 10, 0.7)
     strong = Finding("IBAN", 2, 8, 1.0)
-    assert merge_overlapping([weak, strong]) == [strong]
+    assert merge_overlapping([weak, strong]) == [Finding("IBAN", 0, 10, 1.0)]
+
+
+def test_partial_overlap_masks_the_union_not_just_the_winner():
+    # AUDIT §1: the loser's uncovered characters must not come out in clear.
+    siren = Finding("SIREN", 0, 9, 1.0)
+    email = Finding("EMAIL", 0, 29, 0.9)
+    assert merge_overlapping([siren, email]) == [Finding("SIREN", 0, 29, 1.0)]
+
+
+def test_chained_overlaps_merge_into_one_span():
+    # a overlaps b, b overlaps c, a does not touch c: still one span.
+    a = Finding("TEL", 0, 10, 0.7)
+    b = Finding("SIREN", 8, 17, 1.0)
+    c = Finding("EMAIL", 15, 30, 0.9)
+    assert merge_overlapping([c, a, b]) == [Finding("SIREN", 0, 30, 1.0)]
+
+
+def test_touching_findings_stay_separate():
+    a = Finding("SIREN", 0, 9, 1.0)
+    b = Finding("EMAIL", 9, 20, 0.9)
+    assert merge_overlapping([b, a]) == [a, b]
 
 
 def test_overlap_equal_confidence_keeps_longer():

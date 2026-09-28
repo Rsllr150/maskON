@@ -6,12 +6,14 @@ especially around chunk boundaries in the streaming redactor.
 """
 
 import hypothesis.strategies as st
-from hypothesis import given, settings
+from hypothesis import example, given, settings
 
+from maskon.masking.apply import apply_mask
 from maskon.service.redaction import RedactionService
 from maskon.streaming.stream import redact_stream
 
 service = RedactionService()
+keyed = RedactionService(hash_key=b"property-key-0123456789")
 
 # A pool of genuinely valid PII (checksums pass) to embed in generated text.
 VALID_PII = [
@@ -74,3 +76,55 @@ def test_label_masking_never_leaks_a_detected_value(text: str):
     redacted, _ = service.redact(text, mask="label")
     for f in findings:
         assert text[f.start : f.end] not in redacted
+
+
+# Hostile text: PII fragments glued with no separator, plus the characters PII
+# are made of. Here detectors do overlap — the case the merge must get right.
+_glue = st.text(alphabet="0123456789 .-@abcAB", max_size=6)
+_hostile = st.lists(st.one_of(_glue, st.sampled_from(VALID_PII)), max_size=8).map(
+    "".join
+)
+
+
+def _blank(original: str, pii_type: str) -> str:
+    # Length-preserving mask: output index i is input index i.
+    return "\0" * len(original)
+
+
+@given(text=st.one_of(_hostile, _pii_text))
+@settings(max_examples=1000)
+@example(text="443061841.contact@example.com")  # AUDIT §1
+@example(text="06 12 34 56 78jean@example.com")  # AUDIT §1
+def test_every_character_a_raw_detector_saw_is_masked(text: str):
+    # Fail-closed merge: whatever a single detector matched, before any
+    # merging, must be masked in the output — not only the winner's span.
+    masked = apply_mask(text, service.detect(text), _blank)
+    for detector in service.detectors:
+        for f in detector.detect(text):
+            assert masked[f.start : f.end] == "\0" * (f.end - f.start), (
+                f"{f.type} {text[f.start : f.end]!r} leaks in {masked!r}"
+            )
+
+
+@given(text=st.one_of(st.text(max_size=300), _hostile))
+@settings(max_examples=500)
+@example(text="FR76 " + "1234 " * 1200)  # AUDIT §4: once raised ValueError
+@example(text="AA11" + "1" * 5000)
+def test_redact_never_raises_on_any_text(text: str):
+    for mask in ("label", "partial", "hash"):
+        keyed.redact(text, mask=mask)
+
+
+@given(text=_hostile)
+@settings(max_examples=1000)
+@example(text="0612345678jean@example.com")
+@example(text="0000 0612 3456 78")
+def test_partial_shows_nothing_of_a_merged_span(text: str):
+    # A span that more than one raw finding fell into is fully hidden: its
+    # edges may belong to the losing PII.
+    partial = service.strategy_for("partial")
+    raw = [f for d in service.detectors for f in d.detect(text)]
+    for f in service.detect(text):
+        members = [r for r in raw if f.start <= r.start and r.end <= f.end]
+        if len(members) > 1:
+            assert partial(text[f.start : f.end], f.type) == "****"

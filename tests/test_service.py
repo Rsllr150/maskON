@@ -45,7 +45,7 @@ def test_redact_hash_is_consistent_for_same_value():
     # The same email masked twice yields the same token → correlate without
     # revealing.
     text = "from a@b.com to a@b.com"
-    redacted, _ = RedactionService(hash_key=b"k").redact(text, mask="hash")
+    redacted, _ = RedactionService(hash_key=b"k" * 16).redact(text, mask="hash")
     tokens = [word for word in redacted.split() if word.startswith("email_")]
     assert len(tokens) == 2
     assert tokens[0] == tokens[1]
@@ -54,8 +54,8 @@ def test_redact_hash_is_consistent_for_same_value():
 def test_redact_hash_uses_the_injected_key():
     # The HMAC key is injected at construction, not baked in at import.
     text = "mail a@b.com"
-    redacted_a, _ = RedactionService(hash_key=b"key-1").redact(text, mask="hash")
-    redacted_b, _ = RedactionService(hash_key=b"key-2").redact(text, mask="hash")
+    redacted_a, _ = RedactionService(hash_key=b"1" * 16).redact(text, mask="hash")
+    redacted_b, _ = RedactionService(hash_key=b"2" * 16).redact(text, mask="hash")
     assert redacted_a != redacted_b
 
 
@@ -83,3 +83,39 @@ def test_explicit_empty_hash_key_is_refused(monkeypatch):
     monkeypatch.delenv("MASKON_HASH_KEY", raising=False)
     with pytest.raises(ValueError, match="needs a key"):
         RedactionService(hash_key=b"").redact("mail a@b.com", mask="hash")
+
+
+def test_partial_shows_edges_only_of_an_exact_detection():
+    partial = RedactionService().strategy_for("partial")
+    assert partial("4111 1111 1111 1111", "CB") == "411111****1111"
+    # A merged union labelled CB but holding a phone number: nothing shown,
+    # or the "first 6" would be the phone's digits.
+    assert partial("06 12 34 56 78 4111 1111 1111 1111", "CB") == "****"
+    assert partial("06 12 34 56 78jean@example.com", "EMAIL") == "****"
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "0612345678jean@example.com",  # TEL inside the EMAIL's local part
+        "jean@0612345678.fr",  # TEL inside the EMAIL's domain
+        "x@AB-123-CD.fr",  # IMMAT inside the domain
+        "0000 0612 3456 78",  # TEL inside a CB
+    ],
+)
+def test_partial_hides_a_span_that_contains_another_pii(text):
+    # The winner's span can be exactly its own detection and still hold a
+    # loser; showing its edges would show the loser's characters.
+    assert RedactionService().redact(text, mask="partial")[0] == "****"
+
+
+def test_nir_that_is_also_a_card_is_hidden_whatever_the_detector_order():
+    from maskon.detectors.carte_bancaire import CarteBancaireDetector
+    from maskon.detectors.nir import NirDetector
+
+    nir = "150013352100797"  # valid NIR key AND valid Luhn
+    for detectors in ([NirDetector(), CarteBancaireDetector()],
+                      [CarteBancaireDetector(), NirDetector()]):  # fmt: skip
+        service = RedactionService(detectors=detectors)
+        assert service.detect(nir)[0].type == "NIR"
+        assert service.redact(nir, mask="partial")[0] == "****"

@@ -15,10 +15,12 @@ from maskon.service.redaction import RedactionService
 
 service = RedactionService()
 
-TRAPS = ["a", "a.", "a-", "a@", "@a.", "a@a", "1", "1 ", "0", "A", "AB-", "+33 "]
-# An unbounded IBAN shape feeds `int()` more than 4300 digits and raises.
-# Not a regex-complexity bug: tracked separately, pinned here so it can't hide.
-IBAN_TRAPS = ["AA11 ", "FR76 "]
+# "AA11 " / "FR76 " build endless IBAN-shaped runs: they once fed `int()` more
+# than 4300 digits and raised (AUDIT §4). The bounded pattern must stay linear.
+TRAPS = [
+    "a", "a.", "a-", "a@", "@a.", "a@a", "1", "1 ", "0", "A", "AB-", "+33 ",
+    "AA11 ", "FR76 ",
+]  # fmt: skip
 
 N = 200_000
 
@@ -35,15 +37,8 @@ def _best_time(detector: Detector, text: str) -> float:
 def _cases() -> list[object]:
     cases: list[object] = []
     for detector in service.detectors:
-        for trap in TRAPS + IBAN_TRAPS:
-            marks = []
-            if detector.type == "IBAN" and trap in IBAN_TRAPS:
-                marks = [pytest.mark.xfail(raises=ValueError, strict=True)]
-            cases.append(
-                pytest.param(
-                    detector, trap, marks=marks, id=f"{detector.type}-{trap!r}"
-                )
-            )
+        for trap in TRAPS:
+            cases.append(pytest.param(detector, trap, id=f"{detector.type}-{trap!r}"))
     return cases
 
 
