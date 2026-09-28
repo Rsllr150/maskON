@@ -13,6 +13,7 @@ from maskon.service.redaction import RedactionService
 from maskon.streaming.stream import redact_stream
 
 service = RedactionService()
+keyed = RedactionService(hash_key=b"property-key-0123456789")
 
 # A pool of genuinely valid PII (checksums pass) to embed in generated text.
 VALID_PII = [
@@ -103,3 +104,12 @@ def test_every_character_a_raw_detector_saw_is_masked(text: str):
             assert masked[f.start : f.end] == "\0" * (f.end - f.start), (
                 f"{f.type} {text[f.start : f.end]!r} leaks in {masked!r}"
             )
+
+
+@given(text=st.one_of(st.text(max_size=300), _hostile))
+@settings(max_examples=500)
+@example(text="FR76 " + "1234 " * 1200)  # AUDIT §4: once raised ValueError
+@example(text="AA11" + "1" * 5000)
+def test_redact_never_raises_on_any_text(text: str):
+    for mask in ("label", "partial", "hash"):
+        keyed.redact(text, mask=mask)

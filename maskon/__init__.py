@@ -32,7 +32,7 @@ def detect(text: str) -> list[Finding]:
 
 
 def redact(text: str, mask: Mask = "label", *, hash_key: bytes | None = None) -> str:
-    """Return `text` with every PII masked.
+    """Return `text` with every PII masked. Never raises on any text.
 
     `mask`: "label" → `[IBAN]`, "partial" → `FR76****189`, "hash" → a keyed,
     deterministic token. `hash_key` keys the hash; when omitted, the
