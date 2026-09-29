@@ -25,6 +25,7 @@ class IbanDetector(Detector):
         r"\b[A-Z]{2}\d{2}"
         r"(?:[A-Z0-9]{11,30}|(?: [A-Z0-9]{4}){1,7}(?: [A-Z0-9]{1,3})?)\b"
     )
+    max_len = 43  # 4 + 7×(1+4) + (1+3) ; 34 alphanumerics
 
     def _is_valid(self, candidate: str) -> bool:
         return mod97(candidate)

@@ -18,3 +18,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   `partial` output for values written with fullwidth digits change** (those
   values were already detected via Unicode `\d`). Nothing changes for an
   ASCII value.
+- EMAIL matches are bounded to 254 characters in total. A longer local run
+  keeps its last characters (next to the `@`); a domain that overflows is
+  clipped to the 254-character window. Every detector declares `max_len`.

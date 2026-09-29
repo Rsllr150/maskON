@@ -15,3 +15,4 @@ class TelDetector(Detector):
     type = "TEL"
     confidence = 0.7  # shape only, no mathematical proof
     _pattern = re.compile(r"(?<!\d)(?:(?:\+33|0033)\s?|0)[1-9](?:[ .-]?\d{2}){4}(?!\d)")
+    max_len = 18  # "0033" + 1 space + 1 + 4×(1+2)

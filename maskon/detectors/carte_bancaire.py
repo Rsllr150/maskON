@@ -19,6 +19,7 @@ class CarteBancaireDetector(Detector):
     # form (rather than an optional separator everywhere) stops the match from
     # bridging two adjacent card numbers — a bug found by property-based testing.
     _pattern = re.compile(r"\b(?:\d{13,19}|\d{4}(?:[ -]\d{4}){2,3}(?:[ -]\d{1,3})?)\b")
+    max_len = 23  # 4 + 3×(1+4) + (1+3)
 
     def _is_valid(self, candidate: str) -> bool:
         return luhn(candidate.replace(" ", "").replace("-", ""))

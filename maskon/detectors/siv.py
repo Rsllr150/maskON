@@ -16,3 +16,4 @@ class SivDetector(Detector):
     # Same separator (- or a single space) on both sides; no compact form.
     # \b at both ends avoids matching inside a longer token.
     _pattern = re.compile(r"\b[A-HJ-NP-TV-Z]{2}([- ])(?!000)\d{3}\1[A-HJ-NP-TV-Z]{2}\b")
+    max_len = 9  # 2 + 1 + 3 + 1 + 2

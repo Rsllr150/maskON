@@ -72,9 +72,10 @@ et `0\u03016 12 34 56 78` (marque combinante) masqués.
 
 ### Lot 4b : max_len par détecteur
 
-- [ ] Borne de l'email à 254 caractères au total
-- [ ] `max_len` ClassVar sur chaque détecteur
-- [ ] Propriété : aucun finding plus long que `max_len`
+- [x] Borne de l'email à 254 caractères au total (partie locale réduite en
+      gardant la fin collée au `@`, puis fenêtre de 254 si le domaine déborde)
+- [x] `max_len` ClassVar sur chaque détecteur
+- [x] Propriété : aucun finding plus long que `max_len` (texte normalisé)
 
 **Méthode :** cycle `flux`.
 
