@@ -21,6 +21,7 @@ class SiretDetector(Detector):
     # mix, so "SIREN 443061841 10004 euros" can't swallow the amount.
     # \b at both ends avoids matching inside a longer run of digits.
     _pattern = re.compile(r"\b(?:\d{14}|\d{3} \d{3} \d{3} \d{5})\b")
+    max_len = 17  # 14 digits + 3 spaces
 
     def _is_valid(self, candidate: str) -> bool:
         digits = candidate.replace(" ", "")

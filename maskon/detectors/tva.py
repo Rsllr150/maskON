@@ -20,6 +20,7 @@ class TvaDetector(Detector):
     # never a mix. Uppercase FR only. \b at both ends avoids matching inside
     # a longer run (an IBAN, a trailing digit, a prefixed letter).
     _pattern = re.compile(r"\b(?:FR\d{11}|FR \d{2} \d{3} \d{3} \d{3})\b")
+    max_len = 17  # "FR" + 11 digits + 4 spaces
 
     def _is_valid(self, candidate: str) -> bool:
         digits = candidate.replace("FR", "").replace(" ", "")

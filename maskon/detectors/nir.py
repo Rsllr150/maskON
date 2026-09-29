@@ -18,6 +18,7 @@ class NirDetector(Detector):
     _pattern = re.compile(
         r"\b[12] ?\d{2} ?\d{2} ?(?:\d{2}|2[AB]) ?\d{3} ?\d{3} ?\d{2}\b"
     )
+    max_len = 21  # 15 significant + 6 optional spaces
 
     def _is_valid(self, candidate: str) -> bool:
         return cle_nir(candidate)

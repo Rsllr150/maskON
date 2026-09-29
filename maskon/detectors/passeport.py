@@ -14,3 +14,4 @@ class PasseportDetector(Detector):
     # 2 digits, 2 uppercase letters, 5 digits. No inner spaces.
     # \b at both ends avoids matching inside a longer token.
     _pattern = re.compile(r"\b\d{2}[A-Z]{2}\d{5}\b")
+    max_len = 9  # 2 + 2 + 5

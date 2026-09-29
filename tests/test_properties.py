@@ -106,6 +106,22 @@ def test_every_character_a_raw_detector_saw_is_masked(text: str):
             )
 
 
+@given(text=st.one_of(_hostile, _pii_text, st.text(max_size=400)))
+@settings(max_examples=1000)
+@example(text="a" * 300 + "@example.com")
+@example(text="443061841." + "a" * 80 + "@example.com")
+def test_no_raw_finding_exceeds_its_detector_max_len(text: str):
+    # Each detector's declared max_len is a hard cap on any match it emits.
+    for detector in service.detectors:
+        for f in detector.detect(text):
+            assert f.end - f.start <= detector.max_len
+
+
+def test_every_default_detector_has_positive_max_len():
+    for detector in service.detectors:
+        assert isinstance(detector.max_len, int) and detector.max_len > 0
+
+
 @given(text=st.one_of(st.text(max_size=300), _hostile))
 @settings(max_examples=500)
 @example(text="FR76 " + "1234 " * 1200)  # AUDIT §4: once raised ValueError

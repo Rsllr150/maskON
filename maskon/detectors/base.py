@@ -2,7 +2,8 @@
 
 A detector scans text with a regex, optionally validates each candidate, and
 emits a `Finding` per confirmed match. Subclasses declare only what differs:
-the pattern, the type label, the confidence, and — if relevant — a validation.
+the pattern, the type label, the confidence, the max match length, and — if
+relevant — a validation.
 """
 
 import re
@@ -17,6 +18,7 @@ class Detector:
     type: ClassVar[str]  # PII label, e.g. "IBAN"
     confidence: ClassVar[float]  # confidence attached to every match
     _pattern: ClassVar[re.Pattern[str]]  # the shape to look for
+    max_len: ClassVar[int]  # max match length in normalised text; bounds overlap
 
     def _is_valid(self, candidate: str) -> bool:
         """Confirm a candidate. Default: accept (no checksum). Checksum

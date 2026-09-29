@@ -17,6 +17,7 @@ class SpiDetector(Detector):
     # a mix, so a compact prefix plus leftover digits can't swallow an amount.
     # \b at both ends avoids matching inside a longer run of digits.
     _pattern = re.compile(r"\b(?:\d{13}|\d{2} \d{2} \d{3} \d{3} \d{3})\b")
+    max_len = 17  # 13 digits + 4 spaces
 
     def _is_valid(self, candidate: str) -> bool:
         return cle_spi(candidate.replace(" ", ""))
