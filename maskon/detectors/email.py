@@ -36,6 +36,9 @@ _DOMAIN_START_CHARS = frozenset(
 )
 _EMAIL = rf"{_LOCAL}+@{_DOMAIN}"
 _DOMAIN_RE = re.compile(_DOMAIN)
+# Necessary tail of _DOMAIN: a '.' then two ASCII letters. Used to skip `@`
+# on traps like 1 MB of "@a." before any domain regex.
+_TLD_SHAPE = re.compile(r"\.[A-Za-z]{2}")
 
 
 class EmailDetector(Detector):
@@ -54,17 +57,34 @@ class EmailDetector(Detector):
         truncates it with `endpos`. The next `@` is sought after the
         previous match ends, so matches do not overlap.
         """
-        # Domain always contains a '.'. One C-level scan avoids visiting every
-        # `@` on traps like 1 MB of "a@".
-        if "." not in text:
+        # Domain always contains a '.' then two letters. Cheap C-level
+        # rejects avoid visiting every `@` on traps like 1 MB of "a@" / "@a.".
+        if "." not in text or "@" not in text:
+            return
+        tld = _TLD_SHAPE.search(text)
+        if tld is None:
             return
         pos = 0
         max_len = self.max_len
         n = len(text)
+        tld_dot = tld.start()
         while True:
-            at = text.find("@", pos)
+            if tld_dot < pos:
+                tld = _TLD_SHAPE.search(text, pos)
+                if tld is None:
+                    return
+                tld_dot = tld.start()
+            # Only `@` that can still see this TLD-shaped tail inside the
+            # 254-char window can match; skip the rest (e.g. each "@a.").
+            at = text.find("@", max(pos, tld_dot - (max_len - 1)))
             if at < 0:
                 return
+            if at >= tld_dot:
+                tld = _TLD_SHAPE.search(text, tld_dot + 1)
+                if tld is None:
+                    return
+                tld_dot = tld.start()
+                continue
             # One-char rejects before any regex: local run glued to `@`, and a
             # domain that can still contain a '.' inside the 254-char window.
             if at == pos or text[at - 1] not in _LOCAL_CHARS:
@@ -79,6 +99,12 @@ class EmailDetector(Detector):
                 if next_dot < 0:
                     return
                 pos = max(at + 1, next_dot - (max_len - 1))
+                continue
+            # Reject before any domain regex when no '.' in the window is
+            # followed by [A-Za-z]{2}. Last-dot-only would drop
+            # example.com..... (trailing dots after a real TLD).
+            if _TLD_SHAPE.search(text, at + 1, window_end) is None:
+                pos = at + 1
                 continue
             floor = max(pos, at - (max_len - 1))
             local_start = at - 1
