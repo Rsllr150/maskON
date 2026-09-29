@@ -31,6 +31,9 @@ _LOCAL_CHARS = frozenset(
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789._%+-"
 )
 _DOMAIN = r"[A-Za-z0-9.-]+\.[A-Za-z]{2,}"
+_DOMAIN_START_CHARS = frozenset(
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.-"
+)
 _EMAIL = rf"{_LOCAL}+@{_DOMAIN}"
 _DOMAIN_RE = re.compile(_DOMAIN)
 
@@ -51,19 +54,36 @@ class EmailDetector(Detector):
         truncates it with `endpos`. The next `@` is sought after the
         previous match ends, so matches do not overlap.
         """
+        # Domain always contains a '.'. One C-level scan avoids visiting every
+        # `@` on traps like 1 MB of "a@".
+        if "." not in text:
+            return
         pos = 0
         max_len = self.max_len
+        n = len(text)
         while True:
             at = text.find("@", pos)
             if at < 0:
                 return
-            floor = max(pos, at - (max_len - 1))
-            local_start = at
-            while local_start > floor and text[local_start - 1] in _LOCAL_CHARS:
-                local_start -= 1
-            if local_start == at:
+            # One-char rejects before any regex: local run glued to `@`, and a
+            # domain that can still contain a '.' inside the 254-char window.
+            if at == pos or text[at - 1] not in _LOCAL_CHARS:
                 pos = at + 1
                 continue
+            if at + 1 >= n or text[at + 1] not in _DOMAIN_START_CHARS:
+                pos = at + 1
+                continue
+            window_end = at + max_len
+            if text.find(".", at + 1, window_end) < 0:
+                next_dot = text.find(".", window_end)
+                if next_dot < 0:
+                    return
+                pos = max(at + 1, next_dot - (max_len - 1))
+                continue
+            floor = max(pos, at - (max_len - 1))
+            local_start = at - 1
+            while local_start > floor and text[local_start - 1] in _LOCAL_CHARS:
+                local_start -= 1
             domain = _DOMAIN_RE.match(text, at + 1)
             if domain is None:
                 pos = at + 1
